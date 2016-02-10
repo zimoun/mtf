@@ -27,7 +27,7 @@ epsInt = 1
 epsExt = 1
 muInt = 1
 muExt = 1
-wavelengthVacuum = 9.5
+wavelengthVacuum = 7.5
 kVacuum = 2 * np.pi / wavelengthVacuum
 
 kExt = kVacuum * np.sqrt(eps[0] * muExt)
@@ -233,6 +233,55 @@ MTF_list = [
 
     ]
 
+#
+print('==== Form the MTF matrix')
+
+HalfAA= 0. * Idaa
+HalfBB= 0. * Idbb
+#
+HalfAB= 0. * Idab
+HalfBA= 0. * Idba
+
+zAA= 0. * Zdaa
+zBB= 0. * Zdbb
+#
+zAB= 0. * Zdab
+zBA= 0. * Zdba
+
+
+Id_list = [
+
+    [Idaa, Idba, zAA, zBA, HalfAA, zAA, zBA, zBA],
+    [Idab, Idbb, zAB, zBB, zAB, zAB, HalfBB, zBB],
+
+    [zAA, zBA, Idaa, Idba, zAA, -HalfAA, zBA, zBA],
+    [zAB, zBB, Idab, Idbb, zAB, zAB, zBB, -HalfBB],
+
+    [HalfAA, zBA, zAA, zBA, Idaa, zAA, zBA, zBA],
+    [zAA, zBA, -HalfAA, zBA, zAA, Idaa, zBA, zBA],
+
+    [zAB, HalfBB, zAB, zBB, zAB, zAB, Idbb, zBB],
+    [zAB, zBB, zAB, -HalfBB, zAB, zAB, zBB, Idbb],
+
+    ]
+
+A_list = [
+
+    [-K0aa, -K0ba, V0aa, V0ba, HalfAA, zAA, zBA, zBA],
+    [-K0ab, -K0bb, V0ab, V0bb, zAB, zAB, HalfBB, zBB],
+
+    [W0aa, W0ba, Q0aa, Q0ba, zAA, -HalfAA, zBA, zBA],
+    [W0ab, W0bb, Q0ab, Q0bb, zAB, zAB, zBB, -HalfBB],
+
+    [HalfAA, zBA, zAA, zBA, -K1, V1, zBA, zBA],
+    [zAA, zBA, -HalfAA, zBA, W1, Q1, zBA, zBA],
+
+    [zAB, HalfBB, zAB, zBB, zAB, zAB, -K2, V2],
+    [zAB, zBB, zAB, -HalfBB, zAB, zAB, W2, Q2],
+
+    ]
+
+
 MTF = createBlockedBoundaryOperator(
     context, MTF_list)
 
@@ -247,11 +296,17 @@ rhsMTF = [
     -0.5* incNeumannTraceB
 ]
 
+AAA = createBlockedBoundaryOperator(
+    context, A_list)
+JJJ = createBlockedBoundaryOperator(
+    context, Id_list)
+
 
 
 for os in MTF_list:
     for o in os:
         a = o.weakForm()
+
 for o in rhsMTF:
     a = o.projections()
 
@@ -275,8 +330,7 @@ print(t1-t0)
 print(MTFsolution.solverMessage())
 print(MTFsolution.iterationCount())
 
-
-print('==== end solved... extraction...')
+print('==== end solved... begin extraction...')
 
 ########################################################
 ########################################################
@@ -426,41 +480,140 @@ print("# MTF    {:^15E} {:^15E} {:^15E} {:^15E}".format(
 print('')
 
 
-sys.exit('bye.')
+# sys.exit('bye.')
 
-M = MTF.weakForm().asMatrix()
+# M = MTF.weakForm().asMatrix()
 
-pdA = incDirichletTraceA.projections()
-pdB = incDirichletTraceB.projections()
-pnA = incNeumannTraceA.projections()
-pnB = incNeumannTraceB.projections()
+# pdA = incDirichletTraceA.projections()
+# pdB = incDirichletTraceB.projections()
+# pnA = incNeumannTraceA.projections()
+# pnB = incNeumannTraceB.projections()
 
-cdA = incDirichletTraceA.coefficients()
-cdB = incDirichletTraceB.coefficients()
-cnA = incNeumannTraceA.coefficients()
-cnB = incNeumannTraceB.coefficients()
+# cdA = incDirichletTraceA.coefficients()
+# cdB = incDirichletTraceB.coefficients()
+# cnA = incNeumannTraceA.coefficients()
+# cnB = incNeumannTraceB.coefficients()
 
-v = np.array([], dtype=complex)
-v = np.concatenate((v, 0*cdA))
-v = np.concatenate((v, 0*cdB))
-v = np.concatenate((v, 0*cnA))
-v = np.concatenate((v, 0*cnB))
+# v = np.array([], dtype=complex)
+# v = np.concatenate((v, 0*cdA))
+# v = np.concatenate((v, 0*cdB))
+# v = np.concatenate((v, 0*cnA))
+# v = np.concatenate((v, 0*cnB))
 
-v = np.concatenate((v, -cdA))
-v = np.concatenate((v, -cnA))
-v = np.concatenate((v, -cdB))
-v = np.concatenate((v, -cnB))
+# v = np.concatenate((v, -cdA))
+# v = np.concatenate((v, -cnA))
+# v = np.concatenate((v, -cdB))
+# v = np.concatenate((v, -cnB))
 
-b = M.dot(v)
+# b = M.dot(v)
 
-beg, end = 0, len(pdA)
-ppdA, beg, end = 2.0 * b[beg:end], end, end+len(pdB)
-ppdB, beg, end = 2.0 * b[beg:end], end, end+len(pnA)
-ppnA, beg, end = -2.0 * b[beg:end], end, end+len(pnB)
-ppnB, beg, end = -2.0 * b[beg:end], end, end+len(pnB)
+# beg, end = 0, len(pdA)
+# ppdA, beg, end = 2.0 * b[beg:end], end, end+len(pdB)
+# ppdB, beg, end = 2.0 * b[beg:end], end, end+len(pnA)
+# ppnA, beg, end = -2.0 * b[beg:end], end, end+len(pnB)
+# ppnB, beg, end = -2.0 * b[beg:end], end, end+len(pnB)
 
-ppdA_1, beg, end = -2.0 * b[beg:end], end, end+len(pdA)
-ppnA_1, beg, end = -2.0 * b[beg:end], end, end+len(pnA)
+# ppdA_1, beg, end = -2.0 * b[beg:end], end, end+len(pdA)
+# ppnA_1, beg, end = -2.0 * b[beg:end], end, end+len(pnA)
 
-ppdB_2, beg, end = -2.0 * b[beg:end], end, end+len(pdB)
-ppnB_2, beg, end = -2.0 * b[beg:end], end, end+len(pnB)
+# ppdB_2, beg, end = -2.0 * b[beg:end], end, end+len(pdB)
+# ppnB_2, beg, end = -2.0 * b[beg:end], end, end+len(pnB)
+
+
+
+Mw = MTF.weakForm()
+
+shape = Mw.shape
+
+b = np.array([], dtype=complex)
+for r in rhsMTF:
+    b = np.concatenate((b, r.projections()))
+
+Aw = AAA.weakForm()
+
+Jw = JJJ.weakForm()
+Jcsc = sp.csc_matrix(Jw.asMatrix())
+iJlu = spla.splu(Jcsc)
+
+M = spla.LinearOperator(shape, matvec=Mw.matvec, dtype=complex)
+
+J = spla.LinearOperator(shape, matvec=Jw.matvec, dtype=complex)
+iJ = spla.LinearOperator(shape, matvec=iJlu.solve, dtype=complex)
+
+A = spla.LinearOperator(shape, matvec=Aw.matvec, dtype=complex)
+
+A2 = A * iJ * A
+#spla.LinearOperator(shape, matvec=lambda x: A(iJ(A(x))), dtype=complex)
+
+X = A - M
+#spla.LinearOperator(shape, matvec=lambda x: A(x) - M(x), dtype=complex)
+
+Ce = 0.5 * J + A
+Ci = 0.5 * J - A
+
+Ce2 = Ce * iJ * Ce
+Ci2 = Ci * iJ * Ci
+
+x = np.random.rand(shape[0])
+
+y = A2(x)
+z = 0.25 * J(x)
+e = la.norm(y - z)
+print(e)
+
+yy = Ce2(x)
+zz = Ce(x)
+ee = la.norm(yy - zz)
+print(ee)
+
+yyy = Ci2(x)
+zzz = Ci(x)
+eee = la.norm(yyy - zzz)
+print(eee)
+
+print('Error-Calderon with random [no-sense]')
+yyyy = A(x)
+zzzz = 0.5 * J(x)
+eeee = la.norm(yyyy - zzzz)
+print(eeee)
+
+print('gmres')
+c, res = 0, []
+def f(x):
+    global c, res
+    c += 1
+    print(c, x)
+    res.append(x)
+
+c, res = 0, []
+x, info = spla.gmres(M, b, tol=1e-8, callback=f, restart=20)
+print(info)
+
+print('###################')
+c, res = 0, []
+x, info = spla.gmres(M, b, tol=1e-8, callback=f)
+print(info)
+res0 = res[:]
+
+print('Error-Calderon')
+yyyy = A(x)
+zzzz = 0.5 * J(x)
+eeee = la.norm(yyyy - zzzz)
+print(eeee)
+
+print(res)
+
+
+from krypy.linsys import LinearSystem, Gmres
+from krypy.gmres_mgs import gmres_mgs
+
+linear_system = LinearSystem(M, b)
+
+# solve the linear system (approximate solution is solver.xk)
+solver = Gmres(linear_system)
+
+print('###################')
+c, res = 0, []
+myres = []
+x, info = gmres_mgs(M, b, tol=1e-8, callback=f, residuals=myres)
+print(info)

@@ -23,7 +23,7 @@ from tools import createList
 # Physical Parameters
 
 kExt = 0.1
-N = 4
+N = 2
 
 meshname = 'sphere-disjoint.msh'
 
@@ -35,7 +35,7 @@ doms = [
     { 'name': '0',
       'eps': 1,
       'union': [-surfs[i] for i in range(len(surfs))],
-      'neighbor': ['A', 'B', 'C', 'D']
+      'neighbor': ['A', 'B'] #, 'C', 'D']
       },
     { 'name': 'A',
       'eps': 2,
@@ -46,18 +46,19 @@ doms = [
       'eps': 2,
       'union': surfs[1],
       'neighbor': '0'
-      },
-    { 'name': 'C',
-    'eps': 2,
-    'union': surfs[2],
-      'neighbor': '0'
-    },
-    { 'name': 'D',
-      'eps': 2,
-      'union': surfs[3],
-      'neighbor': '0'
-  }
-]
+      }
+    ]
+#     { 'name': 'C',
+#     'eps': 2,
+#     'union': surfs[2],
+#       'neighbor': '0'
+#     },
+#     { 'name': 'D',
+#       'eps': 2,
+#       'union': surfs[3],
+#       'neighbor': '0'
+#   }
+# ]
 
 Shape = 0
 for dom in doms:
@@ -283,16 +284,17 @@ wX = opX.weakForm()
 
 wA = opA.weakForm()
 
-Id = wId.asMatrix()
-X = wX.asMatrix()
-A = wA.asMatrix()
+# Id = wId.asMatrix()
+# X = wX.asMatrix()
+# A = wA.asMatrix()
 
+MTF = wA - wX
 
 #
 #####################################
 #####################################
 
-sys.exit('yep')
+# sys.exit('yep')
 
 rhsMTF = [
     0.5* incDirichletTraceA,
@@ -335,6 +337,9 @@ print(MTFsolution.iterationCount())
 
 
 print('==== end solved... extraction...')
+
+sys.exit('bye.')
+
 
 ########################################################
 ########################################################
