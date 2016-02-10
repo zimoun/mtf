@@ -1,19 +1,13 @@
-alpha = 20 ;
-k = 0.5 * Pi;
+alpha = 5 ;
+k = 0.1;
 
 eps = {2, 3, 4};
 
 rad = {1, 1, 0.5};
 L = {0, 0.5, 1};
 
-// eps = {2, 3};
-
-// rad = {1, 1};
-// L = {0, 0.5};
-
-// eps = {2};
-// rad = {1};
-// L = {0};
+A = {1.5, 1, 1.5};
+B = {1, 1.5, 1};
 
 Printf("k= %f  ,   alpha= %f  ,  Ndom= %f", k, alpha, #eps[]);
 
@@ -26,6 +20,9 @@ EndIf
 
 e = L[0];
 
+ea = 0;
+eb = 0;
+
 //
 
 tag = news;
@@ -36,9 +33,18 @@ l = newl;
 ll = newll;
 Ss = news;
 
+EA = A[ii-1]*rad;
+EB = B[ii-1]*rad;
+
+a = A[ii-1];
+b = B[ii-1];
+
 If (ii != 1)
-  e = e + L[ii-1] + rad[ii-2] + rad[ii-1];
+  e = e + L[ii-1] + A[ii-2]*rad[ii-2] + A[ii-1]*rad[ii-1];
+  ea = ea + EA;
+  eb = eb + EB;
 EndIf
+
 
 If (ii != #eps[])
   perm = Sqrt(eps[ii]);
@@ -62,34 +68,35 @@ z = e*Sqrt(Z)/Sqrt(X+Y+Z);
 
 Point(p+1) = {x, y, z, 1.};
 
-Point(p+2) = {r+x, y, z, lc};
-Point(p+3) = {x, r+y, z, lc};
+Point(p+2) = {a*r+x, y, z, lc};
+Point(p+3) = {x, b*r+y, z, lc};
 
-Circle(l+1) = {p+2, p+1, p+3};
+Ellipse(l+1) = {p+2, p+1, p+1, p+3};
 
-Point(p+4) = {-r+x, y, z, lc};
-Point(p+5) = {x, -r+y, z, lc};
+Point(p+4) = {-a*r+x, y, z, lc};
+Point(p+5) = {x, -b*r+y, z, lc};
 
-Circle(l+2) = {p+3, p+1, p+4};
+Ellipse(l+2) = {p+3, p+1, p+1, p+4};
 
-Circle(l+3) = {p+4, p+1, p+5};
+Ellipse(l+3) = {p+4, p+1, p+1, p+5};
 
-Circle(l+4) = {p+5, p+1, p+2};
+Ellipse(l+4) = {p+5, p+1, p+1, p+2};
 
-Point(p+6) = {x, y, -r+z, lc};
-Point(p+7) = {x, y, r+z, lc};
-Circle(l+5) = {p+3, p+1, p+6};
-Circle(l+6) = {p+6, p+1, p+5};
-Circle(l+7) = {p+5, p+1, p+7};
-Circle(l+8) = {p+7, p+1, p+3};
+Point(p+6) = {x, y, -b*r+z, lc};
+Point(p+7) = {x, y, b*r+z, lc};
 
-Circle(l+9) = {p+2, p+1, p+7};
+Ellipse(l+5) = {p+3, p+1, p+1, p+6};
+Ellipse(l+6) = {p+6, p+1, p+1, p+5};
+Ellipse(l+7) = {p+5, p+1, p+1, p+7};
+Ellipse(l+8) = {p+7, p+1, p+1, p+3};
 
-Circle(l+10) = {p+7, p+1, p+4};
+Ellipse(l+9) = {p+2, p+1, p+1, p+7};
 
-Circle(l+11) = {p+4, p+1, p+6};
+Ellipse(l+10) = {p+7, p+1,  p+1, p+4};
 
-Circle(l+12) = {p+6, p+1, p+2};
+Ellipse(l+11) = {p+4, p+1,  p+1, p+6};
+
+Ellipse(l+12) = {p+6, p+1,  p+1, p+2};
 
 Line Loop(ll+13) = {l+2, l+8, -(l+10)};
 Ruled Surface(Ss+14) = {ll+13};
@@ -124,4 +131,4 @@ EndFor
 
 
 Mesh 2;
-Save "sphere-disjoint.msh" ;
+Save "ellipse-disjoint.msh" ;

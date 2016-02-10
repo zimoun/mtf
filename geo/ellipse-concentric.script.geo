@@ -2,7 +2,7 @@ alpha = 10 ;
 k = 20;
 rad = 0.3;
 
-eps = {1} ;
+eps = {2, 3, 4} ;
 
 div = #eps[];
 
@@ -19,6 +19,8 @@ eb = 0;
 
 //
 
+tag = news;
+
 Point(1) = {0.0, 0.0, 0.0, 1.};
 
 For ii In {1:#eps[]}
@@ -33,10 +35,10 @@ If (ii != 1)
 EndIf
 
 If (ii != #eps[])
-  perm = eps[ii];
+  perm = Sqrt(eps[ii]);
 EndIf
 If (ii == #eps[])
-  perm = eps[ii-1];
+  perm = Sqrt(eps[ii-1]);
 EndIf
 
 
@@ -98,7 +100,9 @@ Line Loop(ll+27) = {-(l+4), l+12, -(6+l)};
 Ruled Surface(Ss+28) = {ll+27};
 
 
-Physical Surface(ii) = {Ss+28, Ss+26, Ss+16, Ss+14, Ss+20, Ss+24, Ss+22, Ss+18};
+Physical Surface(tag) = {Ss+28, Ss+26, Ss+16, Ss+14, Ss+20, Ss+24, Ss+22, Ss+18};
+tag++;
+
 EndFor
 
 
