@@ -25,7 +25,8 @@ class MultiTrace:
 
     def __init__(self, kRef, meshname, doms,
                  J_is='BlockedDiscrete',
-                 X_is='BlockedDiscrete'):
+                 X_is='BlockedDiscrete',
+                 use_slp=True):
 
         if isinstance(doms, list):
             domains = Domains(doms)
@@ -54,7 +55,10 @@ class MultiTrace:
             X_is = 'BlockedDiscrete'
         self._X_is = X_is
 
-        print('==J_is: {0} , X_is: {1}'.format(J_is, X_is))
+        self.use_slp = use_slp
+
+        print('==J_is: {0} , X_is: {1} , use_slp={2}'.format(J_is, X_is,
+                                                             use_slp))
 
 
         self.domains = domains
@@ -94,12 +98,12 @@ class MultiTrace:
             funK = lambda trial, ran, test, k: bem.operators.boundary.helmholtz.double_layer(trial, ran, test, k)
             funV = lambda trial, ran, test, k: bem.operators.boundary.helmholtz.single_layer(trial, ran, test, k)
             funQ = lambda trial, ran, test, k: bem.operators.boundary.helmholtz.adjoint_double_layer(trial, ran, test, k)
-            funW = lambda trial, ran, test, k: bem.operators.boundary.helmholtz.hypersingular(trial, ran, test, k)
+            funW = lambda trial, ran, test, k: bem.operators.boundary.helmholtz.hypersingular(trial, ran, test, k, use_slp=use_slp)
         else:
             funK = lambda trial, ran, test, k: bem.operators.boundary.laplace.double_layer(trial, ran, test)
             funV = lambda trial, ran, test, k: bem.operators.boundary.laplace.single_layer(trial, ran, test)
             funQ = lambda trial, ran, test, k: bem.operators.boundary.laplace.adjoint_double_layer(trial, ran, test)
-            funW = lambda trial, ran, test, k: bem.operators.boundary.laplace.hypersingular(trial, ran, test)
+            funW = lambda trial, ran, test, k: bem.operators.boundary.laplace.hypersingular(trial, ran, test, use_slp=use_slp)
 
         self._funK, self._funV = funK, funV
         self._funW, self._funQ = funW, funQ
@@ -148,13 +152,21 @@ class MultiTrace:
             opII = bem.BlockedOperator(2, 2)
 
             space_trial_d = space(grid, "P", 1, domains=dom['interfaces'])
-            space_trial_n = space(grid, "P", 1, domains=dom['interfaces'])
 
-            space_range_d = space(grid, "P", 1, domains=dom['interfaces'])
-            space_range_n = space(grid, "P", 1, domains=dom['interfaces'])
+            if self.use_slp:
+                space_trial_n = space_trial_d
+                space_range_d, space_range_n = space_trial_d, space_trial_n
+                space_test_d, space_test_n = space_trial_d, space_trial_n
 
-            space_test_d = space(grid, "P", 1, domains=dom['interfaces'])
-            space_test_n = space(grid, "P", 1, domains=dom['interfaces'])
+            else:
+                space_trial_n = space(grid, "P", 1, domains=dom['interfaces'])
+
+                space_range_d = space(grid, "P", 1, domains=dom['interfaces'])
+                space_range_n = space(grid, "P", 1, domains=dom['interfaces'])
+
+                space_test_d = space(grid, "P", 1, domains=dom['interfaces'])
+                space_test_n = space(grid, "P", 1, domains=dom['interfaces'])
+
 
             # the kernel type is managed in __init__
             opK = funK(space_trial_d, space_range_d, space_test_d, k)
