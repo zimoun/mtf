@@ -516,7 +516,10 @@ class MultiTrace:
             Jw = self.opI.weak_form()
         else:
             Jw = self.J_weak_form(self._J_is)
-        Xw = self.X_weak_form(self._X_is)
+        # Xw = self.X_weak_form(self._X_is)
+        Xw = self.opX.weak_form()
+        ## not nice, because the type conversion is done 2 times
+        ## need to fix with the Bridge
 
         tt = time()
         E = bem.BlockedDiscreteOperator(N, N)
