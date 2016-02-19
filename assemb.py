@@ -1,6 +1,7 @@
 # coding: utf8
 
 from time import time
+import warnings
 
 import numpy as np
 import scipy.linalg as la
@@ -44,13 +45,13 @@ class MultiTrace:
         self._iJ_assembled = False
 
         if not J_is in ['BlockedDiscrete', 'CSC', 'Blocked']:
-            warning.warn('{0} is not supported. Default used {1}'.format(J_is,
+            warnings.warn('{0} is not supported. Default used {1}'.format(J_is,
                                                                          'BlockedDiscrete'))
             J_is = 'BlockedDiscrete'
         self._J_is = J_is
 
         if not X_is in ['BlockedDiscrete', 'Blocked']:
-            warning.warn('{0} is not supported. Default used {1}'.format(J_is,
+            warnings.warn('{0} is not supported. Default used {1}'.format(J_is,
                                                                          'BlockedDiscrete'))
             X_is = 'BlockedDiscrete'
         self._X_is = X_is
@@ -86,11 +87,11 @@ class MultiTrace:
         if not dtype is None:
             if kernel == 'helm':
                 if dtype != np.complex:
-                    warning.warn('Helmholtz is complex. dtype={}'.format(np.complex))
+                    warnings.warn('Helmholtz is complex. dtype={}'.format(np.complex))
                     dtype = np.complex
             else:
                 if dtype != np.float:
-                    warning.warn('Unsupported dtype. Converted to {}'.format(np.float))
+                    warnings.warn('Unsupported dtype. Converted to {}'.format(np.float))
                     dtype = np.float
         self.dtype = dtype
 
@@ -143,7 +144,7 @@ class MultiTrace:
             print('==Domain: {0}'.format(dom['name']))
             print('===Diag: Block #({0}, {0})'.format(ii))
 
-            eps = dom['phys']
+            eps, alpha, beta = dom['phys']
             k = kRef * np.sqrt(eps)
 
             sig = dom['sign']
@@ -194,6 +195,7 @@ class MultiTrace:
                                                                            domains.getName(jj),
                                                                            ii, jj))
 
+                _, alph, bet = d['phys']
                 opXX = bem.BlockedOperator(2, 2)
 
                 space_trial_d = space(grid, "P", 1, domains=d['interfaces'])
@@ -205,8 +207,8 @@ class MultiTrace:
                 opXd = funI(space_trial_d, space_range_d, space_test_d)
                 opXn = funI(space_trial_n, space_range_n, space_test_n)
 
-                opXX[0, 0] = opXd
-                opXX[1, 1] = - opXn
+                opXX[0, 0] = (alph/alpha) * opXd
+                opXX[1, 1] = - (bet/beta) * opXn
 
                 opX[ii, jj] = opXX
 

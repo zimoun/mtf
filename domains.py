@@ -42,6 +42,13 @@ class Domains:
                     except:
                         raise ValueError("Name of domain has to be 'str' convertible")
                 v = d['phys']
+                if isinstance(v, list):
+                    k, alpha, beta = v
+                else:
+                    k, alpha, beta = v, 1., 1.
+                k, alpha, beta = complex(k), complex(alpha), complex(beta)
+                d['phys'] = [k, alpha, beta]
+
                 v = d['union']
                 if not isinstance(v, list):
                     # if debug:
@@ -69,7 +76,6 @@ class Domains:
                 d['sign'] = sig
                 d['signs'] = [ complex(ii / jj)
                               for ii, jj in zip(d['interfaces'], d['union']) ]
-                d['phys'] = complex(d['phys'])
 
                 for ii in d['interfaces']:
                     if not ii in interfaces:
