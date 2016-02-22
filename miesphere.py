@@ -39,23 +39,29 @@ H1p = lambda n, z: Jp(n, z) + 1j*Yp(n, z)
 
 
 def coeff_ext(n, params, k):
-    R, ks = params
+    R, ks, jumps = params
     ce, ci = ks
+    jumpe, jumpi = jumps
     ke, ki = ce*k, ci*k
-    a = ke*J(n, ki*R)*Jp(n, ke*R)
-    b = ki*Jp(n, ki*R)*J(n, ke*R)
-    c = ki*H1(n, ke*R)*Jp(n, ki*R)
-    d = ke*H1p(n, ke*R)*J(n, ki*R)
+    ae, be = jumpe
+    ai, bi = jumpi
+    a = ke*J(n, ki*R)*Jp(n, ke*R) * ae*ai
+    b = ki*Jp(n, ki*R)*J(n, ke*R) * ae*bi
+    c = ki*H1(n, ke*R)*Jp(n, ki*R) * ae*bi
+    d = ke*H1p(n, ke*R)*J(n, ki*R) * ai*be
     return (2*n+1)*( (1j)**n ) * (a - b) / (c - d)
 
 def coeff_int(n, params, k):
-    R, ks = params
+    R, ks, jumps = params
     ce, ci = ks
+    jumpe, jumpi = jumps
     ke, ki = ce*k, ci*k
-    a = ke*H1(n, ke*R)*Jp(n, ke*R)
-    b = ke*J(n, ke*R)*H1p(n, ke*R)
-    c = ki*H1(n, ke*R)*Jp(n, ki*R)
-    d = ke*H1p(n, ke*R)*J(n, ki*R)
+    ae, be = jumpe
+    ai, bi = jumpi
+    a = ke*H1(n, ke*R)*Jp(n, ke*R) * be*ae
+    b = ke*J(n, ke*R)*H1p(n, ke*R) * be*be
+    c = ki*H1(n, ke*R)*Jp(n, ki*R) * ae*bi
+    d = ke*H1p(n, ke*R)*J(n, ki*R) * ai*be
     return (2*n+1)*( (1j)**n ) * (a - b) / (c - d)
 
 
@@ -83,7 +89,7 @@ def ref_inc(mesh, Params, name='ref-inc.pos', ext=True):
 def mie_sphere(mesh, Params, name='mie-sphere.pos', field='sca'):
     count = 0
     N, params, kk = Params
-    R, (ce, ci) = params
+    R, (ce, ci), jumps = params
     kk = Cartesian(kk)
     k = kk.norm()
     kk = kk.normalized()
@@ -108,13 +114,15 @@ def mie_sphere(mesh, Params, name='mie-sphere.pos', field='sca'):
     mesh.write(vals, name)
     return vals
 
-def mie_D4grid(field, kk, R, C, ce, ci, N, point):
+def mie_D4grid(field, kk, R, C, ce, jumpe, jumpi, ci, N, point):
     """
     Requires:
      kk : numpy.array([kx, ky, kz])
      R  : radius of the sphere
      C  : center of the sphere
      ce, ci : contrast sqrt(epsExt), sqrt*espInt)
+     jumpe: coeff jump exterior (alpha_Dir, beta_Neu)
+     jumpi: coeff jump interior (alpha_Dir, beta_Neu)
      N  : Number of modes
     """
     pt = point[:]
@@ -125,7 +133,8 @@ def mie_D4grid(field, kk, R, C, ce, ci, N, point):
     if sp.linalg.norm(sp.linalg.norm(pt - C) - R) > 0.3:
         return 0. + 0j
     else:
-        params = (R, (ce, ci))
+        jumps = (jumpe, jumpi)
+        params = (R, (ce, ci), jumps)
         p = Cartesian((pt[0], pt[1], pt[2]))
         pnorm = p.norm()
         pn = p.normalized()
@@ -142,13 +151,15 @@ def mie_D4grid(field, kk, R, C, ce, ci, N, point):
             val += cn * c
     return val
 
-def mie_N4grid(field, kk, R, C, ce, ci, N, point):
+def mie_N4grid(field, kk, R, C, ce, ci, jumpe, jumpi, N, point):
     """
     Requires:
      kk : numpy.array([kx, ky, kz])
      R  : radius of the sphere
      C  : center of the sphere
      ce, ci : contrast sqrt(epsExt), sqrt*espInt)
+     jumpe: coeff jump exterior (alpha_Dir, beta_Neu)
+     jumpi: coeff jump interior (alpha_Dir, beta_Neu)
      N  : Number of modes
     """
     pt = point[:]
@@ -159,7 +170,8 @@ def mie_N4grid(field, kk, R, C, ce, ci, N, point):
     if sp.linalg.norm(sp.linalg.norm(pt - C) - R) > 0.3:
         return 0. + 0j
     else:
-        params = (R, (ce, ci))
+        jumps = (jumpe, jumpi)
+        params = (R, (ce, ci), jumps)
         p = Cartesian((pt[0], pt[1], pt[2]))
         pnorm = p.norm()
         pn = p.normalized()
