@@ -141,18 +141,16 @@ class MultiTrace:
         print('\n=Collecting all the blocks')
         for dom in domains:
             ii = domains.getIndexDom(dom['name'])
-            print('==Domain: {0}'.format(dom['name']))
-            print('===Diag: Block #({0}, {0})'.format(ii))
 
             eps, alpha, beta = dom['phys']
             k = kRef * np.sqrt(eps)
 
             sig = dom['sign']
 
-            print('====info: eps={0}, (alpha={1}, beta={2})'.format(
-                    eps, alpha, beta))
-            print('            k={0} [{1}], sig={2}'.format(
-                    k, kRef, sig))
+            print('==Domain: {0}'.format(dom['name']))
+            print('====info {0}: #{1}, eps={2}, (alpha={3}, beta={4}), sig={5}'.format(
+                    dom['name'], ii, eps, alpha, beta, sig))
+            print('===Diag: Block #({0}, {0})'.format(ii))
 
             opAA = bem.BlockedOperator(2, 2)
             opII = bem.BlockedOperator(2, 2)
@@ -201,11 +199,6 @@ class MultiTrace:
                                                                            ii, jj))
 
                 _, alph, bet = d['phys']
-
-                print('====info: eps={0}, (alpha={1}, beta={2})'.format(
-                        eps, alpha, beta))
-                print('            k={0} [{1}], sig={2}'.format(
-                    k, kRef, sig))
 
                 opXX = bem.BlockedOperator(2, 2)
 
