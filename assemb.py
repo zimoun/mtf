@@ -618,13 +618,19 @@ class MultiTrace:
         space = bem.function_space
         grid_fun = bem.GridFunction
 
+        for dom in domains:
+            if dom['name'] == inf:
+                _, alpha, beta = dom['phys']
+
         rhs = [] * N
         neighbors = domains.getNeighborOf(inf)
         for ii in range(N):
             name = domains.getName(ii)
             dom = domains.getEntry(name)
             jj = domains.getIndexDom(dom['name'])
-            print('==Domain: {0} #{1}'.format(dom['name'], ii))
+            _, alph, bet = dom['phys']
+            print('==Domain: {0} #{1}  \t (alpha={2}, beta={3})'.format(
+                    dom['name'], ii, alph, bet))
 
             space_d = space(grid, "P", 1, domains=dom['interfaces'])
             space_n = space(grid, "P", 1, domains=dom['interfaces'])
@@ -637,7 +643,8 @@ class MultiTrace:
             elif dom in neighbors:
                 diri = grid_fun(space_d, fun=fdir)
                 neum = grid_fun(space_n, fun=fneu)
-                idir, ineu = - diri, - neum
+                a, b = alpha / alph, beta / bet
+                idir, ineu = - a * diri, - b * neum
 
             else:
                 diri = grid_fun(space_d, fun=fzero)
