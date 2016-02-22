@@ -111,6 +111,10 @@ class MultiTrace:
 
         self._funI = bem.operators.boundary.sparse.identity
 
+        self.spaces = [ (
+                ('test_d', 'trial_d'),
+                ('test_d', 'trial_n')
+                ) for d in domains ]
 
 
     def collecting(self):
@@ -171,6 +175,10 @@ class MultiTrace:
                 space_test_d = space(grid, "P", 1, domains=dom['interfaces'])
                 space_test_n = space(grid, "P", 1, domains=dom['interfaces'])
 
+            space_d = (space_test_d, space_trial_d)
+            space_n = (space_test_n, space_trial_n)
+            spaces = (space_d, space_n)
+            self.spaces[ii] = spaces
 
             # the kernel type is managed in __init__
             opK = funK(space_trial_d, space_range_d, space_test_d, k)
@@ -682,7 +690,7 @@ class MultiTrace:
             name = domains.getName(ii)
             s = Jw[ii, ii].shape
             if s[0] != s[1]:
-                print('Warning: block#({0}, {1}) rectangular'.format(s[0], s[1]))
+                print('Warning: block #{0} = ({1}, {2}) rectangular'.format(ii, s[0], s[1]))
             end = start + s[1]
             slices[name] = (start, end)
             start = end
