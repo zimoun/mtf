@@ -81,7 +81,7 @@ class Domains:
                     if not ii in interfaces:
                         interfaces.append(ii)
             except:
-                raise SyntaxError("Check if 'name', 'phys' or 'union' are given")
+                raise SyntaxError("Check 'name', 'phys' or 'union'.")
 
             if not name in names:
                 names.append(name)
