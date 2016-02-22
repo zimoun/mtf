@@ -149,6 +149,11 @@ class MultiTrace:
 
             sig = dom['sign']
 
+            print('====info: eps={0}, (alpha={1}, beta={2})'.format(
+                    eps, alpha, beta))
+            print('            k={0} [{1}], sig={2}'.format(
+                    k, kRef, sig))
+
             opAA = bem.BlockedOperator(2, 2)
             opII = bem.BlockedOperator(2, 2)
 
@@ -196,6 +201,12 @@ class MultiTrace:
                                                                            ii, jj))
 
                 _, alph, bet = d['phys']
+
+                print('====info: eps={0}, (alpha={1}, beta={2})'.format(
+                        eps, alpha, beta))
+                print('            k={0} [{1}], sig={2}'.format(
+                    k, kRef, sig))
+
                 opXX = bem.BlockedOperator(2, 2)
 
                 space_trial_d = space(grid, "P", 1, domains=d['interfaces'])
