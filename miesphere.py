@@ -114,7 +114,7 @@ def mie_sphere(mesh, Params, name='mie-sphere.pos', field='sca'):
     mesh.write(vals, name)
     return vals
 
-def mie_D4grid(field, kk, R, C, ce, jumpe, jumpi, ci, N, point):
+def mie_D4grid(field, kk, R, C, ce, ci, jumpe, jumpi, N, point):
     """
     Requires:
      kk : numpy.array([kx, ky, kz])
