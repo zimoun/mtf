@@ -8,9 +8,10 @@ from assemb import MultiTrace, checker
 from time import time
 import scipy.linalg as la
 
-meshname = "./geo/ellipse-disjoint.msh"
+meshname = "./geo/sphere-disjoint.msh"
+#meshname = "./geo/ellipse-disjoint.msh"
 
-kRef = 3.3 * np.pi
+kRef = 0.1 * np.pi
 
 dd = [
     { 'name': '0',

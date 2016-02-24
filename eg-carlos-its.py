@@ -63,6 +63,8 @@ print('#time: {}'.format(tt))
 
 checker('Calderon WO', A, J, xx)
 
+#################################################
+
 print('\nJac restart={0} maxiter={1}'.format(restart, maxiter), flush=True)
 del res
 res = []
@@ -179,5 +181,8 @@ plt.legend()
 plt.grid(True)
 
 # plt.show()
-if restart is None: restrt = 'Inf'
+if restart is None:
+    restrt = 'Inf'
+else:
+    restrt = restart
 myfig.savefig('its_k{0}_r{1}.eps'.format(kRef, restrt))
