@@ -113,7 +113,7 @@ class MultiTrace:
 
         self.spaces = [ (
                 ('test_d', 'trial_d'),
-                ('test_d', 'trial_n')
+                ('test_n', 'trial_n')
                 ) for d in domains ]
 
 
