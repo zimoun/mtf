@@ -336,7 +336,7 @@ class MultiTrace:
         domains = self.domains
         dtype = self.dtype
 
-        print('==Identity assembling: J', end=' ')
+        print('==Identity assembling: J', end=' ', flush=True)
         Jw = self.opI.weak_form()
         self._check_shape(Jw.shape)
 
