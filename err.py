@@ -15,16 +15,17 @@ kRef = 0.1 * np.pi
 dd = [
     { 'name': '0',
       'phys': 1,
-      'union': [-1, -2, -3],
+      'union': [-1], #, -2, -3],
   },
     { 'name': 'A',
       'phys': 2,
       'union': 1,
-  },
-    { 'name': 'B',
-      'phys': 1,
-      'union': 2,
-      }
+  }
+  # },
+  #   { 'name': 'B',
+  #     'phys': 1,
+  #     'union': 2,
+  #     }
   # },
   #   { 'name': 'C',
   #     'phys': 4,
@@ -130,13 +131,13 @@ checker('Calderon WO', A, J, xx)
 slices = mtf.getSlices()
 
 #for c in ['B', 'C', '0', 'A']:
-for c in ['B', '0', 'A']:
-    s = slices[c]
-    y = x[s[0]:s[1]]
+# for c in ['B', '0', 'A']:
+#     s = slices[c]
+#     y = x[s[0]:s[1]]
 
-    d = mtf.domains.getIndexDom(c)
-    A = Aw[d, d]
-    z = A.dot(y)
+#     d = mtf.domains.getIndexDom(c)
+#     A = Aw[d, d]
+#     z = A.dot(y)
 
 s = slices['0']
 sol = xx[s[0]:s[1]]
@@ -190,6 +191,8 @@ gaerrd = bem.GridFunction(space, coefficients=aerrd)
 print(la.norm(errd), la.norm(aerrd), la.norm(errd)/la.norm(miecoeffs))
 print(gerrd.l2_norm(), gaerrd.l2_norm(), gerrd.l2_norm()/gmie.l2_norm())
 
+
+print(' ')
 
 fmie = bem.GridFunction(space, fun=mieN)
 dnmiecoeffs = fmie.coefficients
