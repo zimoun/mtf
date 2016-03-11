@@ -700,7 +700,7 @@ class MultiTrace:
 
 
 ###########################
-def checker(string, A, B, x):
+def checker(string, A, B, x, b=None):
     if not isinstance(A, spla.LinearOperator):
         raise TypeError('A has to be a LinearOperator')
     if not isinstance(B, spla.LinearOperator):
@@ -716,7 +716,10 @@ def checker(string, A, B, x):
     t0 = time()
     z = B(x)
     t2 = time() - t0
-    e = la.norm(y - z)
+    if b is None:
+        e = la.norm(y - z)
+    else:
+        e = la.norm(y - z - b)
     print(e)
     print('#time: {0} {1} {2}'.format(t1, t2, t1 - t2))
 ###########################
