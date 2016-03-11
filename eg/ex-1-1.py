@@ -224,6 +224,8 @@ print('#time: {}'.format(tt))
 
 checker('Calderon GS', A, J, xx)
 
+sol = xx
+
 #################################################
 
 print('\nGS bicgstab maxiter={0}'.format(maxiter), flush=True)
