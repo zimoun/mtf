@@ -195,7 +195,10 @@ class Domains:
 
 #####
 
-def generate_disjoint_Domains(N):
+def generate_disjoint_dict(N, phys=2):
+    if not isinstance(phys, list):
+        v = phys
+        phys = [ v for i in range(N) ]
     surfs = [ i+1 for i in range(N) ]
     doms = [
         { 'name': '0',
@@ -205,13 +208,55 @@ def generate_disjoint_Domains(N):
     for ii in range(N):
         d =  {
             'name': ii+1,
-            'phys': 2,
+            'phys': phys[ii],
             'union': surfs[ii],
         }
         doms.append(d)
     return doms
 
+#####
 
+def write_params_geo(config):
+    try:
+        k = config['kRef']
+        eps = config['eps']
+        rad = config['rad']
+        L = config['L']
+    except:
+        raise TypeError('Missing argument: k, eps, rad, L')
+    try:
+        alpha = config['alpha']
+    except:
+        alpha = 10.
+    try:
+        filename = config['file']
+    except:
+        filename='geo/params.geo'
+    try:
+        name = config['name']
+    except:
+        name = 'my.msh'
+
+    if len(eps) != len(rad):
+        if len(eps) != len(L):
+            raise ValueError("Incoherent parameters: check eps, k, L")
+        if L[0] != 0:
+            raise ValueError("L must start with 0, not {}".format(L[0]))
+
+    with open(filename, 'w') as fp:
+        def fp_write(mystr, myvals):
+            fp.write("{} = {{".format(mystr))
+            for v in myvals[:-1]:
+                fp.write(" {},".format(v))
+            fp.write(" {} }};\n".format(myvals[-1]))
+        fp.write("\nname = '{}';\n".format(name))
+        fp.write("\nk = {};\n".format(k))
+        fp.write("alpha = {}; //point per wavelenght\n\n".format(alpha))
+        fp_write("eps", eps)
+        fp_write("rad", rad)
+        fp_write("L", L)
+
+############
 
 if __name__ == "__main__":
 
@@ -272,3 +317,13 @@ if __name__ == "__main__":
     ]
     domains = Domains(dd)
     domains.write2dot("my-graph.dot")
+
+    N = 5
+    geoconf = {
+        'kRef': 0.1,
+        'eps': [ i+2 for i in range(N) ],
+        'rad': [ 1. for i in range(N) ],
+        'L': [ 1. for i in range(N) ]
+        }
+    write_params_geo(geoconf)
+    my_d = generate_disjoint_dict(N, geoconf['eps'])
