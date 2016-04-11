@@ -1,19 +1,16 @@
-alpha = 10 ;
-k = 0.1 * Pi;
+Include "params.geo";
+//// params.geo is written by python script
+//// otherwise,
+//// the parameters: k, alpha, eps, L, rad
+//// !!!!! MUST be given !!!!!
+//// for example:
+// alpha = 10;
+// k = 0.1;
+// eps = { 2, 3, 4 };
+// rad = { 1, 1, 0.5 };
+// L = { 0, 0.5, 1 };
+// name = 'my.msh';
 
-eps = {2, 3, 4};
-
-rad = {1, 1, 0.5};
-L = {0, 0.5, 1};
-
-// eps = {2, 3};
-
-// rad = {1, 1};
-// L = {0, 0.5};
-
-// eps = {2};
-// rad = {1};
-// L = {0};
 
 Printf("k= %f  ,   alpha= %f  ,  Ndom= %f", k, alpha, #eps[]);
 
@@ -124,4 +121,4 @@ EndFor
 
 
 Mesh 2;
-Save "sphere-disjoint.msh" ;
+Save Sprintf(Str(name));
