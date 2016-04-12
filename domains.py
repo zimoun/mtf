@@ -186,6 +186,23 @@ class Domains:
             print("Try: $ dot -Teps " + filename)
 
 
+    def add(self, other):
+        if not isinstance(other, self.__class__):
+            raise TypeError('Operation not supported.')
+        this, that = self.doms[:], other.doms[:]
+        for ii, d in enumerate(self):
+            for jj, o in enumerate(other):
+                if d['name'] == o['name']:
+                    del this[ii]
+                    del that[jj]
+                    break
+        this.extend(that)
+        ddd = self.__class__(this)
+        return ddd
+
+    def __add__(self, other):
+        return self.add(other)
+
     def __len__(self):
         return len(self.doms)
 
@@ -193,25 +210,78 @@ class Domains:
         for d in self.doms:
             yield d
 
+    def __repr__(self):
+        mystr = '['
+        orders = ['name', 'phys', 'union', 'interfaces', 'sign', 'signs']
+        for d in self:
+            mystr += "\n{\n"
+            for key in orders:
+                mystr += "{0}\t: {1}".format(key[0:6], d[key])
+                mystr += ",\n"
+            mystr += "},\n"
+        mystr += "]\n"
+        return mystr
+
+
 #####
 
-def generate_disjoint_dict(N, phys=2):
+def generate_disjoint_dict(N, phys=2, infty='0', offset=1):
+    if str(infty) == str(offset):
+        raise ValueError('infty and offset MUST be different.')
     if not isinstance(phys, list):
         v = phys
         phys = [ v for i in range(N) ]
-    surfs = [ i+1 for i in range(N) ]
+    else:
+        if len(phys) != N:
+            raise ValueError('Incompatible length')
+    surfs = [ i+offset for i in range(N) ]
     doms = [
-        { 'name': '0',
+        { 'name': infty,
           'phys': 1,
           'union': [-surfs[i] for i in range(len(surfs))],
       }]
     for ii in range(N):
         d =  {
-            'name': ii+1,
+            'name': ii+offset,
             'phys': phys[ii],
             'union': surfs[ii],
         }
         doms.append(d)
+    return doms
+
+#####
+
+def generate_concentric_dict(N, phys=2, infty=('0', 1), offset=2):
+    if isinstance(infty, tuple):
+        infty, the_tag = infty
+    else:
+        the_tag = 1
+    if str(the_tag) == str(offset):
+        raise ValueError('infty and offset MUST be different.')
+    if not isinstance(phys, list):
+        v = phys
+        phys = [ v for i in range(N) ]
+    surfs = [the_tag]
+    surfs.extend([ the_tag + i +offset for i in range(N) ])
+    doms = [
+        { 'name': infty,
+          'phys': 1,
+          'union': -surfs[0],
+      }]
+    for ii in range(N-1):
+        d =  {
+            'name': ii+offset,
+            'phys': phys[ii],
+            'union': [surfs[ii], -surfs[ii+1]],
+        }
+        doms.append(d)
+    ii = N-1
+    d =  {
+        'name': ii+offset,
+        'phys': phys[ii],
+        'union': surfs[ii],
+    }
+    doms.append(d)
     return doms
 
 #####
@@ -322,12 +392,20 @@ if __name__ == "__main__":
     domains = Domains(dd)
     domains.write2dot("my-graph.dot")
 
-    N = 5
+    N = 2
     geoconf = {
         'kRef': 0.1,
         'eps': [ i+2 for i in range(N) ],
         'rad': [ 1. for i in range(N) ],
         'L': [ 1. for i in range(N) ]
         }
+    geoconf['L'][0] = 0
     geoconf = write_params_geo(geoconf)
-    my_d = generate_disjoint_dict(N, geoconf['eps'])
+    my_d = generate_disjoint_dict(N+3) #, geoconf['eps'])
+    my_c = generate_concentric_dict(N, geoconf['eps'], infty=(1, 1), offset=11)
+
+    d, c = Domains(my_d), Domains(my_c)
+    r = d + c
+    r.write2dot("my-graph.dot")
+    from os import system
+    system('dot -Teps my-graph.dot > graph.eps')
