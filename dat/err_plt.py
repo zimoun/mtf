@@ -37,32 +37,39 @@ Alpha = shaper(mat['Alpha'])
 myfig = plt.figure()
 lw, ms = 3, 10
 
-plt.loglog(Size, dEL2, 'r--', linewidth=lw, markersize=ms, label='L2 Dir.')
+ax = myfig.add_subplot(111)
 
-plt.loglog(Size, dEnl2, 'rd', linewidth=lw, markersize=ms, label='normalized l2 Dir.')
-plt.loglog(Size, dEnL2, 'r-', linewidth=lw, markersize=ms, label='normalized L2 Dir.')
+ax.loglog(Size, dEL2, 'r--', linewidth=lw, markersize=ms, label='L2 Dir.')
 
-plt.loglog(Size, nEL2, 'b--', linewidth=lw, markersize=ms, label='L2 Neu.')
+ax.loglog(Size, dEnl2, 'rd', linewidth=lw, markersize=ms, label='normalized l2 Dir.')
+ax.loglog(Size, dEnL2, 'r-', linewidth=lw, markersize=ms, label='normalized L2 Dir.')
 
-plt.loglog(Size, nEnl2, 'bd', linewidth=lw, markersize=ms, label='normalized l2 Neu.')
-plt.loglog(Size, nEnL2, 'b-', linewidth=lw, markersize=ms, label='normalized L2 Neu.')
+ax.loglog(Size, nEL2, 'b--', linewidth=lw, markersize=ms, label='L2 Neu.')
 
-plt.loglog(Size, Ecald, 'm-', linewidth=lw, markersize=ms, label='Calderon l2 Sol.')
-plt.loglog(Size, Etrans, 'mv', linewidth=lw, markersize=ms, label='Transmission l2 Sol.')
+ax.loglog(Size, nEnl2, 'bd', linewidth=lw, markersize=ms, label='normalized l2 Neu.')
+ax.loglog(Size, nEnL2, 'b-', linewidth=lw, markersize=ms, label='normalized L2 Neu.')
 
-plt.loglog(Size, Ecald_mie, 'cs-', linewidth=lw, markersize=ms, label='Calderon l2 Mie')
-plt.loglog(Size, Etrans_mie, 'g*-',linewidth=lw, markersize=ms, label='Transmission l2 Mie')
+ax.loglog(Size, Ecald, 'm-', linewidth=lw, markersize=ms, label='Calderon l2 Sol.')
+ax.loglog(Size, Etrans, 'mv', linewidth=lw, markersize=ms, label='Transmission l2 Sol.')
 
-plt.xlabel('DoF')
-plt.ylabel('Error')
+ax.loglog(Size, Ecald_mie, 'cs-', linewidth=lw, markersize=ms, label='Calderon l2 Mie')
+ax.loglog(Size, Etrans_mie, 'g*-',linewidth=lw, markersize=ms, label='Transmission l2 Mie')
 
-plt.grid(True, which="both")
+ax.set_xlabel('DoF')
+ax.set_ylabel('Error')
 
-#plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
-plt.legend(bbox_to_anchor=(1.1, 1.05))
-#plt.legend(loc=3)
+ax.grid(True, which="both")
 
-plt.show()
+#ax.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+ax.legend(bbox_to_anchor=(1.1, 1.05))
+#ax.legend(loc=3)
+
+axx = ax.twiny()
+axx.set_xticks(Alpha)
+axx.set_xticklabels(Alpha)
+axx.set_xlabel(r"Mesh Density: $\frac{\lambda}{\alpha}$")
+
+#myfig.show()
 myfig.savefig('err_eps{0}_k{1}_Ndom{2}.eps'.format(eps, k, Ndom))
 
 sio.savemat('err_eps{0}_k{1}_Ndom{2}.mat'.format(eps, k, Ndom),
