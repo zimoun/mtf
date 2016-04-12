@@ -233,15 +233,17 @@ def write_params_geo(config):
     except:
         filename='geo/params.geo'
     try:
-        name = config['name']
+        name = config['meshname']
+        # ugly! TODO: fix this mess
+        name = name.replace('geo/', '')
     except:
         name = 'my.msh'
 
     if len(eps) != len(rad):
         if len(eps) != len(L):
             raise ValueError("Incoherent parameters: check eps, k, L")
-        if L[0] != 0:
-            raise ValueError("L must start with 0, not {}".format(L[0]))
+    if L[0] != 0:
+        raise ValueError("L must start with 0, not {}".format(L[0]))
 
     with open(filename, 'w') as fp:
         def fp_write(mystr, myvals):
@@ -255,6 +257,8 @@ def write_params_geo(config):
         fp_write("eps", eps)
         fp_write("rad", rad)
         fp_write("L", L)
+    config['meshname'] = 'geo/' + name
+    return config
 
 ############
 
@@ -325,5 +329,5 @@ if __name__ == "__main__":
         'rad': [ 1. for i in range(N) ],
         'L': [ 1. for i in range(N) ]
         }
-    write_params_geo(geoconf)
+    geoconf = write_params_geo(geoconf)
     my_d = generate_disjoint_dict(N, geoconf['eps'])

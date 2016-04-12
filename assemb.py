@@ -65,7 +65,7 @@ class MultiTrace:
         self.domains = domains
         self.N = len(domains)
 
-        print('==Importing Grid/Mesh', end=' ', flush=True)
+        print('==Importing Grid/Mesh {}'.format(meshname), end=' ', flush=True)
         self.grid = grid = bem.import_grid(meshname)
         print('done.', flush=True)
 
@@ -722,4 +722,5 @@ def checker(string, A, B, x, b=None):
         e = la.norm(y - z - b)
     print(e)
     print('#time: {0} {1} {2}'.format(t1, t2, t1 - t2))
+    return e
 ###########################
