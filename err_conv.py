@@ -15,11 +15,83 @@ from assemb import MultiTrace, checker
 from domains import write_params_geo, generate_disjoint_dict
 
 from miesphere import mie_D4grid, mie_N4grid
-
+from krylov import gmres
 
 #################################################
 
-from krylov import gmres
+kRef_rc = 0.1 * np.pi
+eps_rc = 2
+
+Ndom = 1
+geoconf = {
+    'kRef': kRef_rc,
+    'eps': [ 1. for i in range(Ndom) ],
+    'rad': [ 1. for i in range(Ndom) ],
+    'L': [ 1. for i in range(Ndom) ],
+    'meshname': "sphere-disjoint.msh"
+}
+geoconf['L'][0] = 0
+geoconf['eps'][0] = eps_rc
+geoconf = write_params_geo(geoconf)
+dd = generate_disjoint_dict(Ndom, geoconf['eps'])
+
+alphas = [3, 10, 50]
+
+#################################################
+
+kRef = geoconf['kRef']
+eps = geoconf['eps'][0]
+
+#################################################
+
+iincident = 1
+
+def dir_data(x, normal, dom_ind, result):
+    result[0] =  -np.exp( 1j * kRef * x[iincident])
+
+def neu_data(x, normal, dom_ind, result):
+    result[0] = -1j * normal[iincident] * kRef * np.exp( 1j * kRef * x[iincident])
+
+#################################################
+
+C = np.array([0, 0, 0])
+k = kRef
+kk = [0, 0, 0]
+for q in range(3):
+    if q == iincident:
+        kk[q] = k
+kk = tuple(kk)
+R = 1
+ce, ci = 1, np.sqrt(eps)
+jumpe, jumpi  = (1, 1), (1, 1)
+Nmodes = 50
+field = 'sca'
+# field = 'int'
+# field = 'inc'
+
+def mieD(point, normal, dom_ind, result):
+    val = mie_D4grid(field, kk, R, C, ce, ci, jumpe, jumpi, Nmodes, point)
+    result[0] = val
+
+def uinc(point, normal, dom_ind, result):
+    result[0] = np.exp(1j * kRef * point[iincident])
+
+def mieN(point, normal, dom_ind, result):
+    val = mie_N4grid(field, kk, R, C, ce, ci, jumpe, jumpi, Nmodes, point)
+    result[0] = val
+
+def dnuinc(point, normal, dom_ind, result):
+    result[0] = 1j * kRef * normal[1] * np.exp(1j * kRef * point[iincident])
+
+def mieD_int(point, normal, dom_ind, result):
+    val = mie_D4grid('int', kk, R, C, ce, ci, jumpe, jumpi, Nmodes, point)
+    result[0] = val
+
+def mieN_int(point, normal, dom_ind, result):
+    val = mie_N4grid('int', kk, R, C, ce, ci, jumpe, jumpi, Nmodes, point)
+    result[0] = val
+
+#################################################
 
 def rescaleRes(res, P, b):
     scale = 1.0 / la.norm(P(b))
@@ -51,73 +123,6 @@ maxiter = 1000
 
 #################################################
 
-N = 1
-geoconf = {
-    'kRef': 0.1 * np.pi,
-    'eps': [ i+2 for i in range(N) ],
-    'rad': [ 1. for i in range(N) ],
-    'L': [ 1. for i in range(N) ],
-    'meshname': "sphere-disjoint.msh"
-}
-geoconf['L'][0] = 0
-geoconf = write_params_geo(geoconf)
-dd = generate_disjoint_dict(N, geoconf['eps'])
-
-#################################################
-
-kRef = geoconf['kRef']
-iincident = 1
-
-def dir_data(x, normal, dom_ind, result):
-    result[0] =  -np.exp( 1j * kRef * x[iincident])
-
-def neu_data(x, normal, dom_ind, result):
-    result[0] = -1j * normal[iincident] * kRef * np.exp( 1j * kRef * x[iincident])
-
-#################################################
-
-C = np.array([0, 0, 0])
-k = kRef
-kk = [0, 0, 0]
-for q in range(3):
-    if q == iincident:
-        kk[q] = k
-kk = tuple(kk)
-R = 1
-ce, ci = 1, np.sqrt(2)
-jumpe, jumpi  = (1, 1), (1, 1)
-Nmodes = 50
-field = 'sca'
-# field = 'int'
-# field = 'inc'
-
-def mieD(point, normal, dom_ind, result):
-    val = mie_D4grid(field, kk, R, C, ce, ci, jumpe, jumpi, Nmodes, point)
-    result[0] = val
-
-def uinc(point, normal, dom_ind, result):
-    result[0] = np.exp(1j * kRef * point[iincident])
-
-def mieN(point, normal, dom_ind, result):
-    val = mie_N4grid(field, kk, R, C, ce, ci, jumpe, jumpi, Nmodes, point)
-    result[0] = val
-
-def dnuinc(point, normal, dom_ind, result):
-    result[0] = 1j * kRef * normal[1] * np.exp(1j * kRef * point[iincident])
-
-def mieD_int(point, normal, dom_ind, result):
-    val = mie_D4grid('int', kk, R, C, ce, ci, jumpe, jumpi, N, point)
-    result[0] = val
-
-def mieN_int(point, normal, dom_ind, result):
-    val = mie_N4grid('int', kk, R, C, ce, ci, jumpe, jumpi, N, point)
-    result[0] = val
-
-#################################################
-
-
-vals = [3, 10, 50]
-
 Size = []
 
 Ecald, Etrans = [], []
@@ -129,13 +134,13 @@ dEL2, dEnL2 = [], []
 nEl2, nEnl2 = [], []
 nEL2, nEnL2 = [], []
 
-for val in vals:
+for alpha in alphas:
 
     print('\n')
     print('##################')
     print('\n')
 
-    geoconf['alpha'] = val
+    geoconf['alpha'] = alpha
     geoconf = write_params_geo(geoconf)
     system("gmsh geo/sphere-disjoint.script.geo -")
 
@@ -164,7 +169,7 @@ for val in vals:
     M = A - X
 
     print('')
-    print(val, mtf.shape, flush=True)
+    print(alpha, mtf.shape, flush=True)
     print('')
 
     checker('A2 = J', A2, J, x)
@@ -267,7 +272,7 @@ for val in vals:
     print('zeros')
     def zeros(point, normal, dom, res):
         res[0] = 0.0 + 1j * 0.0
-    for ndom in range(1, N):
+    for ndom in range(1, Ndom):
         d = mtf.domains.getIndexDom(str(ndom))
         (space_b, _) , (_, _) = mtf.spaces[d]
         fmie_b = bem.GridFunction(space_b, fun=zeros)
@@ -283,9 +288,10 @@ for val in vals:
     Etrans_mie.append(etrans_mie)
 
 
-sio.savemat('error.mat',
-            {'Size':Size,
-             'Alpha':vals,
+sio.savemat('dat/err.mat',
+            {'kRef':kRef, 'eps':eps, 'Ndom':Ndom,
+             'Size':Size,
+             'Alpha':alphas,
              'Ecald':Ecald, 'Etrans':Etrans,
              'Ecald_mie':Ecald_mie, 'Etrans_mie':Etrans_mie,
              'dEL2': dEL2, 'nEL2':nEL2,

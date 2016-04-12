@@ -3,9 +3,17 @@
 
 import numpy as np
 import scipy.io as sio
+
+import matplotlib
+matplotlib.use('PS')
 import matplotlib.pyplot as plt
 
-mat = sio.loadmat('error.mat')
+mat = sio.loadmat('err.mat')
+
+k = mat['kRef'][0, 0]
+eps = mat['eps'][0, 0]
+Ndom = mat['Ndom'][0, 0]
+
 Size = mat['Size']
 Ecald, Etrans = mat['Ecald'], mat['Etrans']
 Ecald_mie, Etrans_mie = mat['Ecald_mie'], mat['Etrans_mie']
@@ -24,8 +32,9 @@ nEL2, nEl2 = shaper(nEL2), shaper(nEl2)
 dEnL2, dEnl2 = shaper(dEnL2), shaper(dEnl2)
 nEnL2, nEnl2 = shaper(nEnL2), shaper(nEnl2)
 
+Alpha = shaper(mat['Alpha'])
 
-plt.figure()
+myfig = plt.figure()
 lw, ms = 3, 10
 
 plt.loglog(Size, dEL2, 'r--', linewidth=lw, markersize=ms, label='L2 Dir.')
@@ -48,7 +57,22 @@ plt.xlabel('DoF')
 plt.ylabel('Error')
 
 plt.grid(True, which="both")
+
 #plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
 plt.legend(bbox_to_anchor=(1.1, 1.05))
 #plt.legend(loc=3)
+
 plt.show()
+myfig.savefig('err__eps{0}_k{1}.eps'.format(eps, k))
+
+sio.savemat('err_eps{0}_k{1}.mat'.format(eps, k),
+            {'kRef':k, 'eps':eps, 'Ndom':Ndom,
+             'Size':Size,
+             'Alpha':Alpha,
+             'Ecald':Ecald, 'Etrans':Etrans,
+             'Ecald_mie':Ecald_mie, 'Etrans_mie':Etrans_mie,
+             'dEL2': dEL2, 'nEL2':nEL2,
+             'dEl2': dEl2, 'nEl2':nEl2,
+             'dEnL2':dEnL2, 'nEnL2':nEnL2,
+             'dEnl2':dEnl2, 'nEnl2':nEnl2,
+            })
