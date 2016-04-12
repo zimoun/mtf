@@ -22,7 +22,7 @@ from krylov import gmres
 kRef_rc = 0.1 * np.pi
 eps_rc = 2
 
-Ndom = 1
+Ndom = 2
 geoconf = {
     'kRef': kRef_rc,
     'eps': [ 1. for i in range(Ndom) ],
@@ -35,7 +35,7 @@ geoconf['eps'][0] = eps_rc
 geoconf = write_params_geo(geoconf)
 dd = generate_disjoint_dict(Ndom, geoconf['eps'])
 
-alphas = [3, 10, 50]
+alphas = [3, 10, 50, 100]
 
 #################################################
 
@@ -207,6 +207,7 @@ for alpha in alphas:
 
     gmie = bem.GridFunction(space, fun=mieD)
     miecoeffs = gmie.coefficients
+    ggmie = bem.GridFunction(space, coefficients=miecoeffs)
 
     errd = sold - miecoeffs
     aerrd = np.abs(errd)
@@ -272,14 +273,14 @@ for alpha in alphas:
     print('zeros')
     def zeros(point, normal, dom, res):
         res[0] = 0.0 + 1j * 0.0
-    for ndom in range(1, Ndom):
+    for ndom in range(2, Ndom+1):
+        print(ndom)
         d = mtf.domains.getIndexDom(str(ndom))
         (space_b, _) , (_, _) = mtf.spaces[d]
         fmie_b = bem.GridFunction(space_b, fun=zeros)
         miecoeffs_b = fmie_b.coefficients
         yb = np.concatenate((miecoeffs_b, miecoeffs_b))
         yy = np.concatenate((yy, yb))
-        print(ndom)
 
     ecald_mie = checker("Calderon Mie", A, J, yy)
     etrans_mie = checker('Transmission Mie', J, X, yy, b)

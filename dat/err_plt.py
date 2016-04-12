@@ -63,9 +63,9 @@ plt.legend(bbox_to_anchor=(1.1, 1.05))
 #plt.legend(loc=3)
 
 plt.show()
-myfig.savefig('err__eps{0}_k{1}.eps'.format(eps, k))
+myfig.savefig('err_eps{0}_k{1}_Ndom{2}.eps'.format(eps, k, Ndom))
 
-sio.savemat('err_eps{0}_k{1}.mat'.format(eps, k),
+sio.savemat('err_eps{0}_k{1}_Ndom{2}.mat'.format(eps, k, Ndom),
             {'kRef':k, 'eps':eps, 'Ndom':Ndom,
              'Size':Size,
              'Alpha':Alpha,
