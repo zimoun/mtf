@@ -1,15 +1,28 @@
-alpha = 10 ;
-k = 20;
-rad = 0.3;
+Include "params.geo";
+//// params.geo is written by python script
+//// otherwise,
+//// the parameters: k, alpha, eps, L, rad
+//// !!!!! MUST be given !!!!!
+//// for example:
+// alpha = 10;
+// k = 0.1;
+// eps = { 2, 3, 4 };
+// rad = { 1, 1, 0.5 };
+// L = { 0, 0.5, 1 };
+// name = 'my.msh';
 
-eps = {2, 3, 4} ;
+// alpha = 10 ;
+// k = 20;
+// rad = 0.3;
+
+// eps = {2, 3, 4} ;
 
 div = #eps[];
 
 Printf("k= %f  ,   alpha= %f  ,  Ndom= %f", k, alpha, #eps[]);
 
-A = 1;
-B = 0.5;
+A = A[1];
+B = B[1];
 
 EA = A*rad / div;
 EB = B*rad / div;
@@ -108,4 +121,4 @@ EndFor
 
 
 Mesh 2;
-Save "ellipse-concentric.msh" ;
+Save Sprintf(Str(name));

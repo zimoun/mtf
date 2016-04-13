@@ -1,8 +1,15 @@
-alpha = 20 ;
-k = 1;
-rad = 1.;
-
-eps = {2, 4, 16} ;
+Include "params.geo";
+//// params.geo is written by python script
+//// otherwise,
+//// the parameters: k, alpha, eps, L, rad
+//// !!!!! MUST be given !!!!!
+//// for example:
+// alpha = 10;
+// k = 0.1;
+// eps = { 2, 3, 4 };
+// rad = { 1, 1, 0.5 };
+// L = { 0, 0.5, 1 };
+// name = 'my.msh';
 
 div = #eps[];
 
@@ -100,4 +107,4 @@ EndFor
 
 
 Mesh 2;
-Save "sphere-concentric.msh" ;
+Save Sprintf(Str(name));

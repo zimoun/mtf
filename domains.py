@@ -308,6 +308,15 @@ def write_params_geo(config):
         name = name.replace('geo/', '')
     except:
         name = 'my.msh'
+    try:
+        A, B = config['A'], config['B']
+        if len(A) != len(B):
+            raise ValueError('Incompatible long/small ellipsis axis.')
+        if len(A) != len(eps):
+            raise ValueError('Incompatible length: check A and/or eps')
+    except:
+        A = [ 1. for i in eps ]
+        B = [ 1.5 for i in eps ]
 
     if len(eps) != len(rad):
         if len(eps) != len(L):
@@ -327,6 +336,8 @@ def write_params_geo(config):
         fp_write("eps", eps)
         fp_write("rad", rad)
         fp_write("L", L)
+        fp_write("A", A)
+        fp_write("B", B)
     config['meshname'] = 'geo/' + name
     return config
 
