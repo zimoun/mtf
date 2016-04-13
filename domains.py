@@ -392,9 +392,9 @@ if __name__ == "__main__":
     domains = Domains(dd)
     domains.write2dot("my-graph.dot")
 
-    N = 2
+    N = 4
     geoconf = {
-        'kRef': 0.1,
+        'kRef': 0.1 * 3.1415,
         'eps': [ i+2 for i in range(N) ],
         'rad': [ 1. for i in range(N) ],
         'L': [ 1. for i in range(N) ]
@@ -407,5 +407,8 @@ if __name__ == "__main__":
     d, c = Domains(my_d), Domains(my_c)
     r = d + c
     r.write2dot("my-graph.dot")
-    from os import system
-    system('dot -Teps my-graph.dot > graph.eps')
+    from subprocess import call
+    try:
+        call(['dot', '-Teps', 'my-graph.dot'], stdout=open('graph.eps', 'wb'))
+    except OSError:
+        print('install graphviz to give a look to the adjacent graph.')
