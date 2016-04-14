@@ -1,4 +1,4 @@
-Include "params.geo";
+Include "params_tmp.geo";
 //// params.geo is written by python script
 //// otherwise,
 //// the parameters: k, alpha, eps, L, rad
@@ -11,18 +11,19 @@ Include "params.geo";
 // L = { 0, 0.5, 1 };
 // name = 'my.msh';
 
-// alpha = 10 ;
-// k = 20;
-// rad = 0.3;
-
-// eps = {2, 3, 4} ;
-
 div = #eps[];
 
 Printf("k= %f  ,   alpha= %f  ,  Ndom= %f", k, alpha, #eps[]);
 
-A = A[1];
-B = B[1];
+If (#rad[] != 1)
+  rad = rad[1];
+EndIf
+If (#A[] != 1)
+  A = A[1];
+EndIf
+If (#B[] != 1)
+  B = B[1];
+EndIf
 
 EA = A*rad / div;
 EB = B*rad / div;
@@ -31,10 +32,16 @@ eb = 0;
 
 
 //
+If (tag != 0)
+  tag = tag - 1;
+EndIf
+tag = tag + news;
 
-tag = news;
+po = OFFSET + newp;
+Point(po) = {xo, yo, zo, 1.};
 
-Point(1) = {0.0, 0.0, 0.0, 1.};
+p = newp; Point(p) = {xo+1, 0, 0, 1};
+l = OFFSET + newl; Line(l) = {po, p};
 
 For ii In {1:#eps[]}
 p = newp;
@@ -58,35 +65,35 @@ EndIf
 lc = 2*Pi / (alpha * perm * k);
 
 
-Point(p+2) = {A*rad-ea, 0.0, 0.0, lc};
-Point(p+3) = {0, B*rad-eb, 0.0, lc};
+Point(p+2) = {xo+A*rad-ea, yo, zo, lc};
+Point(p+3) = {xo, yo+B*rad-eb, zo, lc};
 
-Point(p+4) = {-A*rad+ea, 0, 0.0, lc};
-Point(p+5) = {0, -B*rad+eb, 0.0, lc};
+Point(p+4) = {xo-A*rad+ea, yo, zo, lc};
+Point(p+5) = {xo, yo-B*rad+eb, zo, lc};
 
-Point(p+6) = {0, 0, -B*rad+eb, lc};
-Point(p+7) = {0, 0, B*rad-eb, lc};
+Point(p+6) = {xo, yo, zo-B*rad+eb, lc};
+Point(p+7) = {xo, yo, zo+B*rad-eb, lc};
 
-Ellipse(l+1) = {p+2, 1, 1, p+3};
+Ellipse(l+1) = {p+2, po, po, p+3};
 
-Ellipse(l+2) = {p+3, 1, 1, p+4};
+Ellipse(l+2) = {p+3, po, po, p+4};
 
-Ellipse(l+3) = {p+4, 1, 1, p+5};
+Ellipse(l+3) = {p+4, po, po, p+5};
 
-Ellipse(l+4) = {p+5, 1, 1, p+2};
+Ellipse(l+4) = {p+5, po, po, p+2};
 
-Ellipse(l+5) = {p+3, 1, 1, p+6};
-Ellipse(l+6) = {p+6, 1, 1, p+5};
-Ellipse(l+7) = {p+5, 1, 1, p+7};
-Ellipse(l+8) = {p+7, 1, 1, p+3};
+Ellipse(l+5) = {p+3, po, po, p+6};
+Ellipse(l+6) = {p+6, po, po, p+5};
+Ellipse(l+7) = {p+5, po, po, p+7};
+Ellipse(l+8) = {p+7, po, po, p+3};
 
-Ellipse(l+9) = {p+2, 1, 1, p+7};
+Ellipse(l+9) = {p+2, po, po, p+7};
 
-Ellipse(l+10) = {p+7, 1, 1, p+4};
+Ellipse(l+10) = {p+7, po, po, p+4};
 
-Ellipse(l+11) = {p+4, 1, 1, p+6};
+Ellipse(l+11) = {p+4, po, po, p+6};
 
-Ellipse(l+12) = {p+6, 1, 1, p+2};
+Ellipse(l+12) = {p+6, po, po, p+2};
 
 Line Loop(ll+13) = {l+2, l+8, -(l+10)};
 Ruled Surface(Ss+14) = {ll+13};

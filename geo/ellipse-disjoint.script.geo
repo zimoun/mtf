@@ -26,8 +26,8 @@ ea = 0;
 eb = 0;
 
 //
-
-tag = news;
+tag = tag - 1;
+tag = tag + news;
 
 For ii In {1:#eps[]}
 p = newp;
