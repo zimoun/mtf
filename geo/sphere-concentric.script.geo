@@ -1,4 +1,4 @@
-Include "params.geo";
+Include "params_tmp.geo";
 //// params.geo is written by python script
 //// otherwise,
 //// the parameters: k, alpha, eps, L, rad
@@ -15,14 +15,30 @@ div = #eps[];
 
 Printf("k= %f  ,   alpha= %f  ,  Ndom= %f", k, alpha, #eps[]);
 
+If (#rad[] != 1)
+  rad = rad[1];
+EndIf
 E = rad / div;
 e = 0;
 
 //
+If (tag != 0)
+  tag = tag - 1;
+EndIf
+tag = tag + news;
+Printf("first tag= %f  (expected last tag: %f)", tag, tag+#eps[]-1);
 
-tag = news;
+po = OFFSET + newp;
+Point(po) = {xo, yo, zo, 1.};
 
-Point(1) = {0.0, 0.0, 0.0, 1.};
+p = newp; Point(p) = {xo+1, yo, zo, 1};
+pp = newp; Point(pp) = {zo, yo+1, zo, 1};
+l = OFFSET + newl; Line(l) = {po, p};
+lb = newl; Line(lb) = {p, pp};
+lc = newl; Line(lc) = {pp, p};
+ll = OFFSET + newll; Line Loop(ll) = {l, lb, lc};
+//Ss = OFFSET + news; Ruled Surface(sS) = {ll};
+Printf("(newp:%f) (newl:%f) (newll:%f) (news:None)", p, l, ll);
 
 For ii In {1:#eps[]}
 p = newp;
@@ -45,34 +61,34 @@ EndIf
 lc = 2*Pi / (alpha * perm * k);
 
 
-Point(p+2) = {rad-e, 0.0, 0.0, lc};
-Point(p+3) = {0, rad-e, 0.0, lc};
+Point(p+2) = {xo+rad-e, yo, zo, lc};
+Point(p+3) = {xo, yo+rad-e, zo, lc};
 
-Circle(l+1) = {p+2, 1, p+3};
+Circle(l+1) = {p+2, po, p+3};
 
-Point(p+4) = {-rad+e, 0, 0.0, lc};
-Point(p+5) = {0, -rad+e, 0.0, lc};
+Point(p+4) = {xo-rad+e, yo, zo, lc};
+Point(p+5) = {xo, yo-rad+e, zo, lc};
 
-Circle(l+2) = {p+3, 1, p+4};
+Circle(l+2) = {p+3, po, p+4};
 
-Circle(l+3) = {p+4, 1, p+5};
+Circle(l+3) = {p+4, po, p+5};
 
-Circle(l+4) = {p+5, 1, p+2};
+Circle(l+4) = {p+5, po, p+2};
 
-Point(p+6) = {0, 0, -rad+e, lc};
-Point(p+7) = {0, 0, rad-e, lc};
-Circle(l+5) = {p+3, 1, p+6};
-Circle(l+6) = {p+6, 1, p+5};
-Circle(l+7) = {p+5, 1, p+7};
-Circle(l+8) = {p+7, 1, p+3};
+Point(p+6) = {xo, yo, zo-rad+e, lc};
+Point(p+7) = {xo, yo, zo+rad-e, lc};
+Circle(l+5) = {p+3, po, p+6};
+Circle(l+6) = {p+6, po, p+5};
+Circle(l+7) = {p+5, po, p+7};
+Circle(l+8) = {p+7, po, p+3};
 
-Circle(l+9) = {p+2, 1, p+7};
+Circle(l+9) = {p+2, po, p+7};
 
-Circle(l+10) = {p+7, 1, p+4};
+Circle(l+10) = {p+7, po, p+4};
 
-Circle(l+11) = {p+4, 1, p+6};
+Circle(l+11) = {p+4, po, p+6};
 
-Circle(l+12) = {p+6, 1, p+2};
+Circle(l+12) = {p+6, po, p+2};
 
 Line Loop(ll+13) = {l+2, l+8, -(l+10)};
 Ruled Surface(Ss+14) = {ll+13};
@@ -104,7 +120,26 @@ tag++;
 
 EndFor
 
-
-
 Mesh 2;
 Save Sprintf(Str(name));
+
+p = newp;
+l = newl;
+ll = newll;
+sS = news;
+
+Printf("(newp:%f) (newl:%f) (newll:%f) (news:%f)", p, l, ll, sS);
+max = -1;
+If (max < p)
+  max = p;
+EndIf
+If (max < l)
+  max = l;
+EndIf
+If (max < ll)
+  max = ll;
+EndIf
+If (max < sS)
+  max = sS;
+EndIf
+Printf("OFFSET = %f; // fix about Gmsh confusion", max) > "offset_tmp.geo";
