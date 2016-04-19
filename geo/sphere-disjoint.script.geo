@@ -1,4 +1,4 @@
-Include "params.geo";
+Include "params_tmp.geo";
 //// params.geo is written by python script
 //// otherwise,
 //// the parameters: k, alpha, eps, L, rad

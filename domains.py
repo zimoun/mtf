@@ -234,24 +234,24 @@ class Domains:
 
 #####
 
-def generate_disjoint_dict(N, phys=2, infty='0', offset=1):
-    if str(infty) == str(offset):
-        raise ValueError('infty and offset MUST be different.')
-    if not isinstance(phys, list):
-        v = phys
-        phys = [ v for i in range(N) ]
-    else:
-        if len(phys) != N:
-            raise ValueError('Incompatible length')
-    surfs = [ i+offset for i in range(N) ]
+def generate_disjoint_dict(one_dict):
+    config = sanitize_config(one_dict, inc_id=False)
+
+    names = config['names']
+    phys = config['phys']
+
+    tag = int(config['tag'])
+
+    Nints = len(names) - 1
+    surfs = [ tag + i  for i in range(Nints) ]
     doms = [
-        { 'name': infty,
-          'phys': 1,
+        { 'name': names[0],
+          'phys': phys[0],
           'union': [-surfs[i] for i in range(len(surfs))],
       }]
-    for ii in range(N):
+    for ii in range(1, Nints):
         d =  {
-            'name': ii+offset,
+            'name': names[ii],
             'phys': phys[ii],
             'union': surfs[ii],
         }
@@ -392,22 +392,22 @@ def generate_concentric_dict(one_dict):
 
     tag = int(config['tag'])
 
-    Ndoms = len(names)
+    Nints = len(names) - 1
     surfs = [tag]
-    surfs.extend([ tag + i for i in range(Ndoms) ])
+    surfs.extend([ tag + i for i in range(Nints) ])
     doms = [
         { 'name': names[0],
           'phys': phys[0],
           'union': [-surfs[0]],
       }]
-    for ii in range(1, Ndoms-1):
+    for ii in range(1, Nints-1):
         d =  {
             'name': names[ii],
             'phys': phys[ii],
             'union': [surfs[ii], -surfs[ii+1]],
         }
         doms.append(d)
-    ii = Ndoms-1
+    ii = Nints-1
     d =  {
         'name': names[ii],
         'phys': phys[ii],
@@ -495,9 +495,7 @@ def merge_msh(dalls, out='all.msh', tmp='geo/Merge-all-meshes_tmp.script.geo'):
         }
     ]
     for d in dalls:
-        print(d)
         for dd in d['doms']:
-            print(dd)
             if dd['name'] == '0':
                 doms[0]['union'].extend(dd['union'])
             else:
@@ -659,3 +657,8 @@ if __name__ == "__main__":
 
     dalls = [dgen, dgenn]
     doms = merge_msh(dalls)
+
+    confff = sanitize_config(Nints=5, tag=3)
+    dgennn = generate_disjoint_dict(confff)
+    cmds = write_params_geo(confff, file_geo='geo/sphere-disjoint.script.geo')
+    call(cmds)
