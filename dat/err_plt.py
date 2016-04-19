@@ -45,13 +45,15 @@ ax.loglog(Size, iSize, 'k--', linewidth=0.5, markersize=ms)
 
 ax.loglog(Size, dEL2, 'r--', linewidth=lw, markersize=ms, label='L2 Dir.')
 
-ax.loglog(Size, dEnl2, 'rd', linewidth=lw, markersize=ms, label='normalized l2 Dir.')
-ax.loglog(Size, dEnL2, 'r-', linewidth=lw, markersize=ms, label='normalized L2 Dir.')
+if dEnl2[0] < 1e5:
+    ax.loglog(Size, dEnl2, 'rd', linewidth=lw, markersize=ms, label='normalized l2 Dir.')
+    ax.loglog(Size, dEnL2, 'r-', linewidth=lw, markersize=ms, label='normalized L2 Dir.')
 
 ax.loglog(Size, nEL2, 'b--', linewidth=lw, markersize=ms, label='L2 Neu.')
 
-ax.loglog(Size, nEnl2, 'bd', linewidth=lw, markersize=ms, label='normalized l2 Neu.')
-ax.loglog(Size, nEnL2, 'b-', linewidth=lw, markersize=ms, label='normalized L2 Neu.')
+if nEnl2[0] < 1e5:
+    ax.loglog(Size, nEnl2, 'bd', linewidth=lw, markersize=ms, label='normalized l2 Neu.')
+    ax.loglog(Size, nEnL2, 'b-', linewidth=lw, markersize=ms, label='normalized L2 Neu.')
 
 ax.loglog(Size, Ecald, 'm-', linewidth=lw, markersize=ms, label='Calderon l2 Sol.')
 ax.loglog(Size, Etrans, 'mv', linewidth=lw, markersize=ms, label='Transmission l2 Sol.')
