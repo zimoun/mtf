@@ -20,22 +20,23 @@ from krylov import gmres
 #################################################
 
 kRef_rc = 0.1 * np.pi
-eps_rc = 2
+eps_rc = 1
 
-N = 2
+N = 1
 geoconf = sanitize_config(Nints=N,
                           names=[ str(i) for i in range(N+1) ],
                           phys=(eps_rc, 1, 1),
-                          kRef=kRef_rc)
+                          kRef=kRef_rc,
+                          init_offset=True)
 dd = generate_disjoint_dict(geoconf)
 cmds = write_params_geo(geoconf)
 
-nlambdas = [3, 10, 50, 100]
+nlambdas = [5, 10, 20, 40, 80, 160]
 
 #################################################
 
 kRef = geoconf['kRef']
-eps, _, _ = geoconf['phys'][0]
+eps, _, _ = geoconf['phys'][1]
 Ndom = len(geoconf['names'])
 
 #################################################
@@ -288,7 +289,7 @@ for nlambda in nlambdas:
 sio.savemat('dat/err.mat',
             {'kRef':kRef, 'eps':eps, 'Ndom':Ndom,
              'Size':Size,
-             'Alpha':alphas,
+             'Nlambdas':nlambdas,
              'Ecald':Ecald, 'Etrans':Etrans,
              'Ecald_mie':Ecald_mie, 'Etrans_mie':Etrans_mie,
              'dEL2': dEL2, 'nEL2':nEL2,
