@@ -36,12 +36,19 @@ If (tag != 0)
   tag = tag - 1;
 EndIf
 tag = tag + news;
+Printf("first tag= %f  (expected last tag: %f)", tag, tag+#eps[]-1);
 
 po = OFFSET + newp;
 Point(po) = {xo, yo, zo, 1.};
 
-p = newp; Point(p) = {xo+1, 0, 0, 1};
+p = newp; Point(p) = {xo+1, yo, zo, 1};
+pp = newp; Point(pp) = {zo, yo+1, zo, 1};
 l = OFFSET + newl; Line(l) = {po, p};
+lb = newl; Line(lb) = {p, pp};
+lc = newl; Line(lc) = {pp, p};
+ll = OFFSET + newll; Line Loop(ll) = {l, lb, lc};
+//Ss = OFFSET + news; Ruled Surface(sS) = {ll};
+Printf("(newp:%f) (newl:%f) (newll:%f) (news:None)", p, l, ll);
 
 For ii In {1:#eps[]}
 p = newp;
@@ -125,7 +132,26 @@ tag++;
 
 EndFor
 
-
-
 Mesh 2;
 Save Sprintf(Str(name));
+
+p = newp;
+l = newl;
+ll = newll;
+sS = news;
+
+Printf("(newp:%f) (newl:%f) (newll:%f) (news:%f)", p, l, ll, sS);
+max = -1;
+If (max < p)
+  max = p;
+EndIf
+If (max < l)
+  max = l;
+EndIf
+If (max < ll)
+  max = ll;
+EndIf
+If (max < sS)
+  max = sS;
+EndIf
+Printf("OFFSET = %f; // fix about Gmsh confusion", max) > "offset_tmp.geo";
