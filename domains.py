@@ -14,7 +14,7 @@ from os.path import isfile
 import uuid
 import itertools
 
-MYID = itertools.count()
+MYID = itertools.count(1)
 EXPLICIT_NAME = True
 
 class Domains:
@@ -51,7 +51,7 @@ class Domains:
                     except:
                         raise ValueError("Name of domain has to be 'str' convertible")
                 v = d['phys']
-                if isinstance(v, list) or isinstane(v, tuple):
+                if isinstance(v, list) or isinstance(v, tuple):
                     k, alpha, beta = v
                 else:
                     k, alpha, beta = v, 1., 1.
@@ -181,14 +181,17 @@ class Domains:
             f.write('graph {\n')
             f.write('\n')
             for name, vals in self.neighs.items():
+                h = ''.join(str(ord(c)) for c in str(name))
+                f.write(h + ' [label="{}"] '.format(name) + ' ;\n')
+            f.write('\n')
+            for name, vals in self.neighs.items():
                 for n, i in vals:
-                    name = str(name)
-                    n = str(n)
+                    h = ''.join(str(ord(c)) for c in str(name))
+                    g = ''.join(str(ord(c)) for c in str(n))
+                    f.write(h  + ' -- ' + g)
                     if label:
-                        f.write(name + ' -- ' + n
-                                + ' [label={}]'.format(i) + ';\n')
-                    else:
-                        f.write(name + ' -- ' + n + ' ;\n')
+                        f.write(' [label="{}"] '.format(i))
+                    f.write(' ;\n')
                     f.write('\n')
             f.write('}\n')
         if debug:
@@ -644,19 +647,29 @@ if __name__ == "__main__":
 
     from subprocess import call
 
-    conf = sanitize_config(init_offset=True)
+    conf = sanitize_config(Nints=3, init_offset=True)
     dgen = generate_concentric_dict(conf)
     cmds = write_params_geo(conf)
     call(cmds)
 
-    conff = sanitize_config(Nints=5, tag=2)
+    conff = sanitize_config(Nints=5, tag=4)
     conff['center'] = (3, 0, 0)
     dgenn = generate_concentric_dict(conff)
     cmds = write_params_geo(conff)
     call(cmds)
 
-    dalls = [dgen, dgenn]
+    cconff = sanitize_config(Nints=4, tag=9)
+    cconff['center'] = (0, 3, 3)
+    ddgenn = generate_concentric_dict(cconff)
+    cmds = write_params_geo(cconff)
+    call(cmds)
+
+    dalls = [dgen, dgenn, ddgenn]
     doms = merge_msh(dalls)
+
+    myd = Domains(doms)
+    myd.write2dot('a-graph.dot')
+    call(['dot', '-Teps', 'a-graph.dot'], stdout=open('graph.eps', 'wb'))
 
     confff = sanitize_config(Nints=5, tag=3)
     dgennn = generate_disjoint_dict(confff)
