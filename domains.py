@@ -240,23 +240,25 @@ class Domains:
 def generate_disjoint_dict(one_dict):
     config = sanitize_config(one_dict, inc_id=False)
 
+
     names = config['names']
     phys = config['phys']
 
     tag = int(config['tag'])
 
-    Nints = len(names) - 1
+    Ndoms = len(names)
+    Nints = Ndoms - 1
     surfs = [ tag + i  for i in range(Nints) ]
     doms = [
         { 'name': names[0],
           'phys': phys[0],
           'union': [-surfs[i] for i in range(len(surfs))],
       }]
-    for ii in range(1, Nints):
+    for ii in range(1, Ndoms):
         d =  {
             'name': names[ii],
             'phys': phys[ii],
-            'union': surfs[ii],
+            'union': surfs[ii-1],
         }
         doms.append(d)
     return doms
@@ -316,7 +318,7 @@ def sanitize_config(config=None,
                     raise ValueError("Incoherent parameters: check number of domain/interface")
                 else:
                     n = len(tmp)
-            except:
+            except KeyError:
                 pass
         return n
 
@@ -330,6 +332,9 @@ def sanitize_config(config=None,
     else:
         Ndoms = Nints + 1
 
+    # TODO: add check !!
+    # still issue if phys, names are list
+    # prior ? Nint vs lists etc.
     if Nints + 1 != Ndoms:
         raise ValueError('Incoherent number of interface/domain')
 
@@ -366,11 +371,11 @@ def sanitize_config(config=None,
     try:
         names = config['names']
     except:
-        names = [names]
-        if EXPLICIT_NAME:
-            names.extend([ str(myid) + '_' + str(i) for i in range(1, Ndoms) ])
-        else:
-            names.extend([ str(uuid.uuid3(uuid.uuid1(), str(i))) for i in range(1, Ndoms) ])
+        if not isinstance(names, list):
+            if EXPLICIT_NAME:
+                names.extend([ str(myid) + '_' + str(i) for i in range(1, Ndoms) ])
+            else:
+                names.extend([ str(uuid.uuid3(uuid.uuid1(), str(i))) for i in range(1, Ndoms) ])
         config['names'] = names
     finally:
         rm = set(names)

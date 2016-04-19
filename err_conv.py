@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 import bempp.api as bem
 
 from assemb import MultiTrace, checker
-from domains import write_params_geo, generate_disjoint_dict
+from domains import sanitize_config, generate_disjoint_dict, write_params_geo
 
 from miesphere import mie_D4grid, mie_N4grid
 from krylov import gmres
@@ -22,25 +22,21 @@ from krylov import gmres
 kRef_rc = 0.1 * np.pi
 eps_rc = 2
 
-Ndom = 2
-geoconf = {
-    'kRef': kRef_rc,
-    'eps': [ 1. for i in range(Ndom) ],
-    'rad': [ 1. for i in range(Ndom) ],
-    'L': [ 1. for i in range(Ndom) ],
-    'meshname': "sphere-disjoint.msh"
-}
-geoconf['L'][0] = 0
-geoconf['eps'][0] = eps_rc
-geoconf = write_params_geo(geoconf)
-dd = generate_disjoint_dict(Ndom, geoconf['eps'])
+N = 2
+geoconf = sanitize_config(Nints=N,
+                          names=[ str(i) for i in range(N+1) ],
+                          phys=(eps_rc, 1, 1),
+                          kRef=kRef_rc)
+dd = generate_disjoint_dict(geoconf)
+cmds = write_params_geo(geoconf)
 
-alphas = [3, 10, 50, 100]
+nlambdas = [3, 10, 50, 100]
 
 #################################################
 
 kRef = geoconf['kRef']
-eps = geoconf['eps'][0]
+eps, _, _ = geoconf['phys'][0]
+Ndom = len(geoconf['names'])
 
 #################################################
 
@@ -134,17 +130,17 @@ dEL2, dEnL2 = [], []
 nEl2, nEnl2 = [], []
 nEL2, nEnL2 = [], []
 
-for alpha in alphas:
+for nlambda in nlambdas:
 
     print('\n')
     print('##################')
     print('\n')
 
-    geoconf['alpha'] = alpha
-    geoconf = write_params_geo(geoconf)
+    geoconf['nlambda'] = nlambda
+    cmds = write_params_geo(geoconf)
     system("gmsh geo/sphere-disjoint.script.geo -")
 
-    mtf = MultiTrace(geoconf['kRef'], geoconf['meshname'], dd)
+    mtf = MultiTrace(geoconf['kRef'], 'geo/'+geoconf['meshname'], dd)
 
     Aw = mtf.A_weak_form()
 
@@ -169,7 +165,7 @@ for alpha in alphas:
     M = A - X
 
     print('')
-    print(alpha, mtf.shape, flush=True)
+    print(nlambda, mtf.shape, flush=True)
     print('')
 
     checker('A2 = J', A2, J, x)
@@ -273,7 +269,7 @@ for alpha in alphas:
     print('zeros')
     def zeros(point, normal, dom, res):
         res[0] = 0.0 + 1j * 0.0
-    for ndom in range(2, Ndom+1):
+    for ndom in range(2, Ndom):
         print(ndom)
         d = mtf.domains.getIndexDom(str(ndom))
         (space_b, _) , (_, _) = mtf.spaces[d]
