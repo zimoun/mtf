@@ -1,3 +1,5 @@
+// -*- mode: Gmsh; -*-
+
 Include "params_tmp.geo";
 //// params.geo is written by python script
 //// otherwise,
