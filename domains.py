@@ -6,6 +6,7 @@ if debug:
     print('Debug: {}'.format(debug))
 
 GMSH = 'gmsh'
+from subprocess import call
 
 from copy import deepcopy
 import warnings as warning
