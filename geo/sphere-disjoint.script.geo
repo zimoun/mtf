@@ -1,4 +1,6 @@
-Include "params.geo";
+// -*- mode: Gmsh; -*-
+
+Include "params_tmp.geo";
 //// params.geo is written by python script
 //// otherwise,
 //// the parameters: k, alpha, eps, L, rad
@@ -24,8 +26,8 @@ EndIf
 e = L[0];
 
 //
-
-tag = news;
+tag = tag - 1;
+tag = tag + news;
 
 For ii In {1:#eps[]}
 p = newp;

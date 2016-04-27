@@ -1,13 +1,17 @@
-alpha = 5 ;
-k = 3.1;
+// -*- mode: Gmsh; -*-
 
-eps = {2, 3, 4};
-
-rad = {1, 1, 0.5};
-L = {0, 0.5, 1};
-
-A = {1.5, 1, 1.5};
-B = {1, 1.5, 1};
+Include "params.geo";
+//// params.geo is written by python script
+//// otherwise,
+//// the parameters: k, alpha, eps, L, rad
+//// !!!!! MUST be given !!!!!
+//// for example:
+// alpha = 10;
+// k = 0.1;
+// eps = { 2, 3, 4 };
+// rad = { 1, 1, 0.5 };
+// L = { 0, 0.5, 1 };
+// name = 'my.msh';
 
 Printf("k= %f  ,   alpha= %f  ,  Ndom= %f", k, alpha, #eps[]);
 
@@ -24,8 +28,8 @@ ea = 0;
 eb = 0;
 
 //
-
-tag = news;
+tag = tag - 1;
+tag = tag + news;
 
 For ii In {1:#eps[]}
 p = newp;
@@ -131,4 +135,4 @@ EndFor
 
 
 Mesh 2;
-Save "ellipse-disjoint.msh" ;
+Save Sprintf(Str(name));

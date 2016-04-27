@@ -32,22 +32,28 @@ nEL2, nEl2 = shaper(nEL2), shaper(nEl2)
 dEnL2, dEnl2 = shaper(dEnL2), shaper(dEnl2)
 nEnL2, nEnl2 = shaper(nEnL2), shaper(nEnl2)
 
-Alpha = shaper(mat['Alpha'])
+iSize = 1. / Size
+
+Nlambdas = shaper(mat['Nlambdas'])
 
 myfig = plt.figure()
 lw, ms = 3, 10
 
 ax = myfig.add_subplot(111)
 
+ax.loglog(Size, iSize, 'k--', linewidth=0.5, markersize=ms)
+
 ax.loglog(Size, dEL2, 'r--', linewidth=lw, markersize=ms, label='L2 Dir.')
 
-ax.loglog(Size, dEnl2, 'rd', linewidth=lw, markersize=ms, label='normalized l2 Dir.')
-ax.loglog(Size, dEnL2, 'r-', linewidth=lw, markersize=ms, label='normalized L2 Dir.')
+if dEnl2[0] < 1e5:
+    ax.loglog(Size, dEnl2, 'rd', linewidth=lw, markersize=ms, label='normalized l2 Dir.')
+    ax.loglog(Size, dEnL2, 'r-', linewidth=lw, markersize=ms, label='normalized L2 Dir.')
 
 ax.loglog(Size, nEL2, 'b--', linewidth=lw, markersize=ms, label='L2 Neu.')
 
-ax.loglog(Size, nEnl2, 'bd', linewidth=lw, markersize=ms, label='normalized l2 Neu.')
-ax.loglog(Size, nEnL2, 'b-', linewidth=lw, markersize=ms, label='normalized L2 Neu.')
+if nEnl2[0] < 1e5:
+    ax.loglog(Size, nEnl2, 'bd', linewidth=lw, markersize=ms, label='normalized l2 Neu.')
+    ax.loglog(Size, nEnL2, 'b-', linewidth=lw, markersize=ms, label='normalized L2 Neu.')
 
 ax.loglog(Size, Ecald, 'm-', linewidth=lw, markersize=ms, label='Calderon l2 Sol.')
 ax.loglog(Size, Etrans, 'mv', linewidth=lw, markersize=ms, label='Transmission l2 Sol.')
@@ -65,9 +71,9 @@ ax.legend(bbox_to_anchor=(1.1, 1.05))
 #ax.legend(loc=3)
 
 axx = ax.twiny()
-axx.set_xticks(Alpha)
-axx.set_xticklabels(Alpha)
-axx.set_xlabel(r"Mesh Density: $\frac{\lambda}{\alpha}$")
+axx.set_xticks(Nlambdas)
+axx.set_xticklabels(Nlambdas)
+axx.set_xlabel(r"Mesh Density: $\frac{\lambda}{n_\lambda}$")
 
 #myfig.show()
 myfig.savefig('err_eps{0}_k{1}_Ndom{2}.eps'.format(eps, k, Ndom))
@@ -75,7 +81,7 @@ myfig.savefig('err_eps{0}_k{1}_Ndom{2}.eps'.format(eps, k, Ndom))
 sio.savemat('err_eps{0}_k{1}_Ndom{2}.mat'.format(eps, k, Ndom),
             {'kRef':k, 'eps':eps, 'Ndom':Ndom,
              'Size':Size,
-             'Alpha':Alpha,
+             'Nlambdas':Nlambdas,
              'Ecald':Ecald, 'Etrans':Etrans,
              'Ecald_mie':Ecald_mie, 'Etrans_mie':Etrans_mie,
              'dEL2': dEL2, 'nEL2':nEL2,
