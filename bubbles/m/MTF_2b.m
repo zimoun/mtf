@@ -32,13 +32,11 @@ for l=0:3
   A=[-K V; W Ks];
 
   for m=-l:l
-    m
 
-    dth=pi/3;
-    dphi=pi/3;
+    dth=pi/5;
+    dphi=pi/5;
     dV0=0;
     for th1=dth:dth:(pi-dth)
-      th1/dth
       for phi1=0:dphi:(2*pi-dphi)
 
         for th2=dth:dth:(pi-dth) %elevacion
@@ -154,9 +152,10 @@ for l=0:3
       psb2(ii)=1i*k0*a^2*Y*(k0*x(2*ii-1)*D1*z2+x(2*ii)*J1*z2);
       psb2(ii)=abs(psb2(ii)).*exp(-1i*angle(psb2(ii)));
     end
-    ps=sum(psb2);
+    psb2
+    ps=sum(psb2)
     PSM=PSM+ps;
-
+    PSM
   end
   PSL(l+1)=PSM;
 end

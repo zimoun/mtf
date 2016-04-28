@@ -16,10 +16,10 @@ ww = 2 * np.pi * freq
 rho0 = 1030; c0 = 1500; k0 = ww / c0;
 rho1 = 1.18; c1 = 344.4475;  k1 = ww/c1;
 a1 = rho1 / rho0;    a1inv = 1/a1;
-PSM = 0;
+PSM = 0 + 0j;
 Amp = 1;
 
-dth, dphi = np.pi / 30, np.pi / 30
+dth, dphi = np.pi / 5, np.pi / 5
 
 # thetas = np.arange(dth, np.pi - dth, dth, dtype=float)
 # phis = np.arange(0, np.pi - dphi, dphi, dtype=float)
@@ -70,7 +70,7 @@ for l in range(0, MM+1):
 
         print(dV0)
         V01 = dV0
-        K01 =0
+        K01 = 0
         W01 = 0
         Ks01 = 0
         A01 = np.array([[-K01, V01], [ W01, Ks01]], dtype=complex)
@@ -133,12 +133,14 @@ for l in range(0, MM+1):
             Y *= np.exp(1j * m * phi) * P[0]
             z2 = hn(k0 * DRec, l)
 
-            tmp= 1j * k0 * a**2* Y * (k0*x[2*ii-1-1] * D1 * z2 + x[2*ii-1] * J1 * z2)
+            tmp = 1j * k0 * a**2* Y * (k0*x[2*ii-1-1] * D1 * z2 + x[2*ii-1] * J1 * z2)
             tmp = tmp[0]
             psb2[ii-1] = np.abs(tmp) * np.exp(-1j*np.angle(tmp))
-
+        print(psb2)
         ps = np.sum(psb2);
-        PSM = PSM + ps;
+        PSM += ps;
+        print(ps)
+        print(PSM)
 
     PSL[l] = PSM
 

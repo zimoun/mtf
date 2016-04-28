@@ -30,8 +30,8 @@ for l in 0:3
     A1 = [-K1 V1; W1 Ks1];
 
     for m in -l:l
-        dth = pi / 30;
-        dphi = pi / 30;
+        dth = pi / 5;
+        dphi = pi / 5;
         dV0 = 0;
         delta = a^4 * (dth*dphi)^2;
 
@@ -43,10 +43,10 @@ for l in 0:3
                 Y1_delta =  conj(Ylm(l,m,th1,phi1)) * sin(th1) * delta
                 for th2 in dth:dth:(pi-dth)
                     for phi2 in 0:dphi:(2*pi-dphi)
-                        sc -= sin(th2) * cos(phi2)
-                        ss -= sin(th2) * sin(phi2)
-                        co -= cos(th2)
-                        dd = a * sqrt(sc^2 + ss^2 + co^2)
+                        SC = sc - sin(th2) * cos(phi2)
+                        SS = ss - sin(th2) * sin(phi2)
+                        CO = co - cos(th2)
+                        dd = a * sqrt(SC^2 + SS^2 + CO^2)
                         g0 = exp(1im * k0 * dd) / (4*pi * dd);
                         dV0 += Ylm(l,m,th2,phi2) * g0 *sin(th2) * Y1_delta
                     end
@@ -54,6 +54,7 @@ for l in 0:3
             end
         end
         print(dV0)
+        print("\n")
 
         V01 = dV0;
         K01 = 0;
@@ -116,3 +117,6 @@ PSL[l+1]=PSM;
 end
 
 conv=abs(PSL-PSL[end])/abs(PSL[end])
+print("\n")
+print(conv)
+print("\n")
