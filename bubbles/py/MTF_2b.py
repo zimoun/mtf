@@ -7,7 +7,7 @@ from funcs import jn, hn
 from funcs import Ylm
 from funcs import cart2sph
 
-MM = 3
+MM = 1
 
 a = 0.005
 freq = 650
@@ -19,7 +19,7 @@ a1 = rho1 / rho0;    a1inv = 1/a1;
 PSM = 0 + 0j;
 Amp = 1;
 
-dth, dphi = np.pi / 5, np.pi / 5
+dth, dphi = np.pi / 3, np.pi / 3
 
 # thetas = np.arange(dth, np.pi - dth, dth, dtype=float)
 # phis = np.arange(0, np.pi - dphi, dphi, dtype=float)
@@ -116,7 +116,9 @@ for l in range(0, MM+1):
 
         pos = np.array([[-20*a, 0, 0], [20*a, 0, 0]])
 
+        print(M, b)
         x = np.linalg.solve(M, b)
+        print('x\n', x)
 
         D1 = dsbesf1(l, k0*a)
         J1 = jn(k0*a, l)
@@ -133,14 +135,16 @@ for l in range(0, MM+1):
             Y *= np.exp(1j * m * phi) * P[0]
             z2 = hn(k0 * DRec, l)
 
-            tmp = 1j * k0 * a**2* Y * (k0*x[2*ii-1-1] * D1 * z2 + x[2*ii-1] * J1 * z2)
+            ind = 2*ii-1-1
+            tmp = 1j * k0 * a**2 * Y * (k0 * x[2*ii-1-1] * D1 * z2 + x[2*ii-1] * J1 * z2)
             tmp = tmp[0]
+            print(tmp)
             psb2[ii-1] = np.abs(tmp) * np.exp(-1j*np.angle(tmp))
-        print(psb2)
+#        print(psb2)
         ps = np.sum(psb2);
         PSM += ps;
-        print(ps)
-        print(PSM)
+        # print(ps)
+        # print(PSM)
 
     PSL[l] = PSM
 

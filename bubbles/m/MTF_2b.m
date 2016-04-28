@@ -13,7 +13,7 @@ a1=rho1/rho0;    a1inv=1/a1;
 PSM=0;
 Amp=1;
 
-for l=0:3
+for l=0:5
 
   z0=a*k0;
   K0=-1i*k0^2*a^4*dsbesf1(l,z0)*hn(z0,l);
@@ -33,8 +33,8 @@ for l=0:3
 
   for m=-l:l
 
-    dth=pi/5;
-    dphi=pi/5;
+    dth=pi/3;
+    dphi=pi/3;
     dV0=0;
     for th1=dth:dth:(pi-dth)
       for phi1=0:dphi:(2*pi-dphi)
@@ -135,8 +135,9 @@ for l=0:3
 
     pos=[(-20*a) 0 0;(20*a) 0 0];
 
+    M, b
     x = M\b;
-
+    x = rand(size(x))
 
     D1=dsbesf1(l,k0*a);
     J1=jn(k0*a,l);
@@ -149,7 +150,7 @@ for l=0:3
       Y=sqrt((2*l+1)*factorial((l-abs(m)))/(4*pi*factorial((l+abs(m)))))*exp(1i*m*phi)*P(1,1);
       z2=hn(k0*DRec,l);
 
-      psb2(ii)=1i*k0*a^2*Y*(k0*x(2*ii-1)*D1*z2+x(2*ii)*J1*z2);
+      psb2(ii)=1i*k0*a^2*Y*(k0*x(2*ii-1)*D1*z2+x(2*ii)*J1*z2)
       psb2(ii)=abs(psb2(ii)).*exp(-1i*angle(psb2(ii)));
     end
     psb2
@@ -162,6 +163,8 @@ end
 
 conv=abs(PSL-PSL(end))/abs(PSL(end))
 
-% figure(7)
-% hold on
-% plot(log10(conv),'k')
+graphics_toolkit("gnuplot")
+figure(7)
+hold on
+plot(log10(conv),'k.-')
+print -deps conv.eps

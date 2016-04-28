@@ -43,9 +43,9 @@ def Ylm(l, m, theta, phi):
     return Y
 
 
-def cart2sph(x,y,z):
-    XsqPlusYsq = x**2 + y**2
-    r = sqrt(XsqPlusYsq + z**2)
-    elev = arctan2(z, sqrt(XsqPlusYsq))
-    az = arctan2(y,x)
+def cart2sph(myx, myy, myz):
+    XsqPlusYsq = myx**2 + myy**2
+    r = sqrt(XsqPlusYsq + myz**2)
+    elev = arctan2(myz, sqrt(XsqPlusYsq))
+    az = arctan2(myy, myx)
     return az, elev, r
