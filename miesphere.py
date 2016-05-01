@@ -68,7 +68,7 @@ def coeff_int(n, params, k):
 def ref_inc(mesh, Params, name='ref-inc.pos', ext=True):
     count = 0
     N, params, kk = Params
-    R, (ce, ci) = params
+    R, (ce, ci), jumps = params
     kk = Cartesian(kk)
     k = kk.norm()
     kk = kk.normalized()
@@ -200,7 +200,7 @@ if __name__ == "__main__":
     k = 0.3 * sp.pi # 3.1
     kk = (0., k, 0.)
 
-    params = R, (sp.sqrt(epsExt), sp.sqrt(epsInt))
+    params = R, (sp.sqrt(epsExt), sp.sqrt(epsInt)), ((1., 1.), (1., 1.))
     Params = N, params, kk
 
     m = Mesh('geo/sphere-disjoint.msh', 1)
