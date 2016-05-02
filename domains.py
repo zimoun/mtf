@@ -278,6 +278,7 @@ def sanitize_config(config=None,
                     tag=1,
                     nlambda=10,
                     center=(0, 0, 0),
+                    Lc=1.,
                     meshname=False,
                     file_params='geo/params_tmp.geo',
                     file_offset='geo/offset_tmp.geo',
@@ -348,7 +349,7 @@ def sanitize_config(config=None,
             val = default
         return val
 
-    keys = ['kRef', 'tag', 'nlambda', 'center', 'file_params', 'meshname', 'file_offset']
+    keys = ['kRef', 'tag', 'nlambda', 'center', 'file_params', 'meshname', 'file_offset', 'Lc']
     vals = [kRef, tag, nlambda, center, file_params, meshname, file_offset]
     for key, val in zip(keys, vals):
         config[key] = check(key, val)
@@ -388,6 +389,12 @@ def sanitize_config(config=None,
         AB = config['AB']
     except:
         config['AB'] = [ AB for i in range(Nints) ]
+
+    try:
+        Lc = config['Lc']
+    except:
+        config['Lc'] = Lc
+
 
     return config
 
@@ -448,6 +455,8 @@ def write_params_geo(dictconf, file_geo='geo/sphere-concentric.script.geo'):
     A = [ a for a, _ in config['AB'] ]
     B = [ b for _, b in config['AB'] ]
 
+    Lc = config['Lc']
+
     file_params = config['file_params']
     file_offset = config['file_offset']
 
@@ -474,6 +483,8 @@ def write_params_geo(dictconf, file_geo='geo/sphere-concentric.script.geo'):
         fp.write('\n// Only used by ellipsis, small and large radii\n')
         fp_write("A", A)
         fp_write("B", B)
+        fp.write('\n// Only used by cylinder\n')
+        fp.write("Lc = {};\n", Lc)
         fp.write('\n// Physical tag: then consecutive Ndom numbering\n')
         fp.write("tag = {};".format(tag))
         fp.write("\n\n////done///\n\n\n")
