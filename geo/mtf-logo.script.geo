@@ -1,6 +1,6 @@
 Include "params_tmp.geo";
 
-tag = 1;
+tag = 0;
 
 perm1 =  Sqrt(eps[0]);
 lc1 = 2*Pi / (alpha * perm1 * k);
@@ -10,6 +10,11 @@ lc2 = 2*Pi / (alpha * perm2 * k);
 
 perm3 =  Sqrt(eps[2]);
 lc3 = 2*Pi / (alpha * perm3 * k);
+
+Lx = 0; Ly = 0; Lz = -0.5;
+vx = 0; vy = 0; vz = 1;
+ax = 0; ay = 1; az = 0;
+thetaRAD = 0.15;
 
 Function MyExtrude
 
@@ -27,7 +32,7 @@ ll = newll; Line Loop(ll) = {lines[]};
 ss = news; Plane Surface(ss) = {-ll};
 
 //ext[] = Extrude{0, 0, 0.5}{Surface{ss};};
-ext[] = Extrude{ {0, 0, -0.5}, {0, 0, 1}, {0, 1, 0}, 0.15}{Surface{ss};};
+ext[] = Extrude{ {Lx, Ly, Lz}, {vx, vy, vz}, {ax, ay, az}, thetaRAD}{Surface{ss};};
 
 jj = 0;
 tmp[] = {ext[0]};
@@ -57,6 +62,11 @@ p = newp; Point(p) = {0.75, 0.3, 0, lc1}; pts[count++] = p;
 p = newp; Point(p) = {0.25, 0.3, 0, lc1}; pts[count++] = p;
 p = newp; Point(p) = {0.25, 0., 0, lc1}; pts[count++] = p;
 
+Lx = 0; Ly = 0; Lz = -0.5;
+vx = 0; vy = 0; vz = 1;
+ax = 0; ay = 0; az = 0;
+thetaRAD = 0.25;
+
 Call MyExtrude;
 
 /// T
@@ -74,26 +84,38 @@ p = newp; Point(p) = {x+0.75, 0.75, 0., lc2}; pts[count++] = p;
 p = newp; Point(p) = {x+0.1, 0.75, 0., lc2}; pts[count++] = p;
 p = newp; Point(p) = {x+0.1, 0, 0., lc2}; pts[count++] = p;
 
-Rotate{ {0, 1, 0}, {0, 0.5, 0}, -0.2}{ Point{pts[]}; }
+Rotate{ {0, 1, 0}, {x, 0.0, 0}, -0.2}{ Point{pts[]}; }
+
+Lx = 0; Ly = 0; Lz = -0.5;
+vx = 0; vy = 0; vz = 1;
+ax = x; ay = 0; az = 0;
+thetaRAD = -0.25;
 
 Call MyExtrude;
 
 /// F
 
-x = 3;
+x = 3.25;
 
 count = -1;
 pts[] = {};
-p = newp; Point(p) = {x, -0.5, 0., lc2}; pts[count++] = p;
+p = newp; Point(p) = {x, -0.3, 0., lc2}; pts[count++] = p;
 p = newp; Point(p) = {x, 1, 0., lc2}; pts[count++] = p;
 p = newp; Point(p) = {x+1, 1, 0., lc2}; pts[count++] = p;
 p = newp; Point(p) = {x+1, 0.55, 0., lc2}; pts[count++] = p;
-p = newp; Point(p) = {x+0.55, 0.80, 0., lc2}; pts[count++] = p;
-p = newp; Point(p) = {x+0.55, 0.30, 0., lc2}; pts[count++] = p;
+p = newp; Point(p) = {x+0.35, 0.80, 0., lc2}; pts[count++] = p;
+p = newp; Point(p) = {x+0.35, 0.30, 0., lc2}; pts[count++] = p;
 p = newp; Point(p) = {x+1, 0.35, 0., lc2}; pts[count++] = p;
 p = newp; Point(p) = {x+1, 0.1, 0., lc2}; pts[count++] = p;
-p = newp; Point(p) = {x+0.55, 0.1, 0., lc2}; pts[count++] = p;
-p = newp; Point(p) = {x+0.55, -0.5, 0., lc2}; pts[count++] = p;
+p = newp; Point(p) = {x+0.3, 0.1, 0., lc2}; pts[count++] = p;
+p = newp; Point(p) = {x+0.3, -0.5, 0., lc2}; pts[count++] = p;
+
+Rotate{ {0, 1, 0}, {x, 0.0, 0}, 0.2}{ Point{pts[]}; }
+
+Lx = 0; Ly = 0; Lz = 0.3;
+vx = 0; vy = 0; vz = 1;
+ax = x; ay = 0; az = 0;
+thetaRAD = 0.25;
 
 Call MyExtrude;
 
