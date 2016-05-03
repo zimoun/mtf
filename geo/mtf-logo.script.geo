@@ -1,15 +1,9 @@
-Include "params_tmp.geo";
+
+lc1 = 0.05;
+lc2 = 0.05;
+lc3 = 0.05;
 
 tag = 0;
-
-perm1 =  Sqrt(eps[0]);
-lc1 = 2*Pi / (alpha * perm1 * k);
-
-perm2 =  Sqrt(eps[1]);
-lc2 = 2*Pi / (alpha * perm2 * k);
-
-perm3 =  Sqrt(eps[2]);
-lc3 = 2*Pi / (alpha * perm3 * k);
 
 Lx = 0; Ly = 0; Lz = -0.5;
 vx = 0; vy = 0; vz = 1;
