@@ -7,11 +7,11 @@ import scipy.sparse.linalg as spla
 
 import bempp.api as bem
 
-eps = 2.
+eps = 1.
 
-k0 = 0.5 * np.pi
-k1 = eps * np.pi
-k2 = eps * np.pi
+k0 = 0.3 * np.pi
+k1 = eps * k0
+k2 = eps * k0
 
 kRef = k0
 

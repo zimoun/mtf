@@ -1,12 +1,12 @@
 
-alpha = 10 ;
+alpha = 25 ;
 Printf("%f", alpha);
 
 eps = 2. ;
 // lambda = 10.5 ;
 // k = 2*Pi* Sqrt(eps) / lambda ;
 
-k = 0.1 * Pi;
+k = 0.3 * Pi;
 
 //
 

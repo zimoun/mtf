@@ -73,6 +73,8 @@ wA = opA.weak_form()
 shape = wA.shape
 N, _ = shape
 
+print('consuming done.')
+
 ##############################
 #
 # The Issue : coupling terms
@@ -92,6 +94,8 @@ X21 = bem.BlockedDiscreteOperator(2, 2)
 ###
 # First collect all the geometrical info
 ###
+
+print('collect my_grid')
 
 nodes0 = my_grid.get_vertices(s0)
 nodes1 = my_grid.get_vertices(s1)
@@ -117,6 +121,8 @@ els_1_2, els_2_1 = my_grid.common_elements(faces1, faces2, only=boule)
 dof_to_n0 = my_grid.dofs_to_nodes(s0)
 dof_to_n1 = my_grid.dofs_to_nodes(s1)
 dof_to_n2 = my_grid.dofs_to_nodes(s2)
+
+print('done.')
 
 ###
 # HACK !! still an issue for general considerations
@@ -285,24 +291,20 @@ rhs = [diri, -neum]
 b = np.concatenate((b, rhs[0].projections()))
 b = np.concatenate((b, rhs[1].projections()))
 
-diri = bem.GridFunction(s1, fun=config.fdir)
-neum = bem.GridFunction(s1, fun=config.fneu)
 
-rhs = [-diri, -neum]
-for r in rhs:
-    p = r.projections()
-    p[get_null(nds_1_2)] = 0. + 0j
-    b = np.concatenate((b, p))
+c = diri.coefficients
+b = np.concatenate((b, -i10.dot(c)))
+c = neum.coefficients
+b = np.concatenate((b, i10.dot(c)))
 
-diri = bem.GridFunction(s2, fun=config.fdir)
-neum = bem.GridFunction(s2, fun=config.fneu)
+c = diri.coefficients
+b = np.concatenate((b, -i20.dot(c)))
+c = neum.coefficients
+b = np.concatenate((b, i20.dot(c)))
 
-rhs = [-diri, -neum]
-for r in rhs:
-    p = r.projections()
-    p[get_null(nds_2_1)] = 0. + 0j
-    b = np.concatenate((b, p))
+b = 0.5 * b
 
+print('solve')
 x, info = spla.gmres(M, b)
 
 ged = bem.GridFunction(s0, coefficients=x[0:N0])
