@@ -61,8 +61,8 @@ def check_proj(diri, neum):
     z = CC(x)
 
     print("D:", diri, "N:", neum,
-          "error:", la.norm(y - z),
-          "cputime:", time() - tt,
+          "error:", int(1e4 * la.norm(y - z)) / 1e4,
+          "cputime:", int(10 * (time() - tt)) / 10,
           "dof:", Aw.shape[0],
     )
 
@@ -71,8 +71,8 @@ if __name__ == "__main__":
     k = np.pi
     lmbda = 2 * np.pi / k
 
-    grid = bem.shapes.sphere(h=lmbda/10)
-    #grid = bem.shapes.cube(h=lmbda/10)
+    #grid = bem.shapes.sphere(h=lmbda/10)
+    grid = bem.shapes.cube(h=lmbda/10)
 
     # space
     # (diri, neum)
@@ -80,10 +80,12 @@ if __name__ == "__main__":
 
     spaces = [
         ((("DP", 0), ("DP", 0)), (("DP", 0), ("DP", 0))),
+        ((("P", 1), ("P", 1)), (("P", 1), ("P", 1))),
+        ((("DUAL", 0), ("DUAL", 0)), (("B-P", 1), ("B-P", 1))),
+
         ((("DP", 1), ("DP", 1)), (("DP", 1), ("DP", 1))),
         ((("DP", 2), ("DP", 2)), (("DP", 2), ("DP", 2))),
         ((("DP", 3), ("DP", 3)), (("DP", 3), ("DP", 3))),
-        ((("P", 1), ("P", 1)), (("P", 1), ("P", 1))),
         ((("P", 2), ("P", 2)), (("P", 2), ("P", 2))),
         ((("P", 3), ("P", 3)), (("P", 3), ("P", 3))),
         ((("B-DP", 1), ("B-DP", 1)), (("B-DP", 1), ("B-DP", 1))),
