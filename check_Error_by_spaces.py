@@ -9,7 +9,7 @@ import scipy.sparse.linalg as spla
 import bempp.api as bem
 
 
-def create_spaces(diri, neum):
+def create_spaces(grid, diri, neum):
 
     trial, test = diri
     triad = bem.function_space(grid, trial[0], trial[1])
@@ -207,21 +207,27 @@ def rhs(spaces, funs):
         b = np.concatenate((b, -p))
     return b
 
-def check_sol(spaces, k, x, b):
-
-    A = get_A(spaces, k)
-    X = get_X(spaces)
-    J = get_J(spaces)
+def check_sol(spaces, k, x, b, diri, neum,
+              A=None, X=None, J=None):
+    if A is None:
+        A = get_A(spaces, k)
+    if X is None:
+        X = get_X(spaces)
+    if J is None:
+        J = get_J(spaces)
 
     nx = la.norm(x)
 
     ya, yt = A(x), J(x)
     za, zt = J(x), X(x)
 
+    era = la.norm(ya - za)/nx
+    ert = la.norm(yt - zt)/nx
     print("D:", diri, "N:", neum,
-          "erAX1e-2:", int(1e8 * la.norm(ya - za)/nx) / 1e6,
-          "erTX1e-2:", int(1e8 * la.norm(yt - zt - b)/nx) / 1e6,
+          "erAX1e-2:", int(1e8 * era) / 1e6,
+          "erTX1e-2:", int(1e8 * ert) / 1e6,
     )
+    return era, ert
 
 
 if __name__ == "__main__":
@@ -259,13 +265,13 @@ if __name__ == "__main__":
     ]
 
     for diri, neum in spaces:
-        space = create_spaces(diri, neum)
+        space = create_spaces(grid, diri, neum)
         check_Ci(space, k)
 
     print('')
 
     for diri, neum in spaces:
-        space = create_spaces(diri, neum)
+        space = create_spaces(grid, diri, neum)
         check_C(space, kk)
 
     print('')
@@ -279,7 +285,7 @@ if __name__ == "__main__":
     from krylov import gmres
 
     for diri, neum in spaces:
-        space = create_spaces(diri, neum)
+        space = create_spaces(grid, diri, neum)
         M = mtf(space, kk)
         b = rhs(space, funs)
         MM = spla.LinearOperator(M.shape, matvec=M.matvec, dtype=complex)
@@ -293,4 +299,4 @@ if __name__ == "__main__":
                          restrt=restart,
                          maxiter=maxiter)
         print(info, len(res))
-        check_sol(space, kk, xx, b)
+        check_sol(space, kk, xx, b, diri, neum)
