@@ -10,3 +10,5 @@ work in progress..
  to install easily insatll [bem++](http://www.bempp.org/)
 
  - see branch `triple` for the attempt about the management of junctions.
+
+ - rethink space management
