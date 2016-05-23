@@ -13,7 +13,7 @@ from krylov import gmres
 
 import check_Error_by_spaces as my
 
-k = 0.5 * np.pi
+k = 0.1 * np.pi
 eps = np.sqrt( 2 )
 iincident = 0
 
@@ -24,15 +24,15 @@ nlmbdas = [5, 10, 20, 30, 40, 50, 60, 70]
 lmbda = 2 * np.pi / k
 kk = [k, eps*k]
 
-names = [ 'P0/P0', 'P1/P1', 'B-DP1/P0_d', 'B-P1/P0_d' ]
+names = [ 'P0/P0', 'P1/P1', 'B-P1/P0_d', 'B-DP1/P0_d' ]
 colors = [ 'k+--', 'bo--', 'rd--', 'gs--' ]
 pls = zip(names, colors)
 
 spaces = [
     ((("DP", 0), ("DP", 0)), (("DP", 0), ("DP", 0))),
     ((("P", 1), ("P", 1)), (("P", 1), ("P", 1))),
-    ((("B-DP", 1), ("B-DP", 1)), (("DUAL", 0), ("DUAL", 0))),
     ((("B-P", 1), ("B-P", 1)), (("DUAL", 0), ("DUAL", 0))),
+    ((("B-DP", 1), ("B-DP", 1)), (("DUAL", 0), ("DUAL", 0))),
 
     ]
 
