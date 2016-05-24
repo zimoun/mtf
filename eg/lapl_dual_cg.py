@@ -8,179 +8,166 @@ import scipy.sparse.linalg as spla
 import matplotlib.pyplot as plt
 
 import krylov
-import krypy
 
 import bempp.api as bem
-from krypy.utils import ConvergenceError
 
-spaces = [
-    (("DP", 0), ("DP", 0)),
-    (("DUAL", 0), ("B-P", 1)),
-    (("P", 1), ("P", 1))
-]
-
-import warnings
 
 def fdata(x, n, d, res):
     res[0] = x[0] + x[1] + x[2]
 
-def solve_left(V, f, Ml=None):
+def solve(Mat, rhs, tol=1e-5, Ml=None, force_left=False):
+    shape = Mat.shape
     if Ml is not None:
-        mv = lambda x: Ml(V(x))
-        ff = Ml(f)
+        if force_left:
+            ml = lambda x: Ml(Mat(x))
+            b = Ml(rhs)
+        else:
+            ml = lambda x: Ml(x)
+            b = rhs
     else:
-        mv = lambda x: V(x)
-        ff = f
-    res = []
-    A, b = spla.LinearOperator(V.shape, matvec=mv), ff
-    tt = time()
-    x, info = krylov.cg(A, b, residuals=res)
-    ts = time() - tt
-    print(info, len(res))
+        ml = lambda x: x
+        b = rhs
+    if force_left:
+        Pl = spla.LinearOperator(shape, matvec=lambda x: x)
+        A = spla.LinearOperator(shape, matvec=ml)
+    else:
+        Pl = spla.LinearOperator(shape, matvec=ml)
+        A = spla.LinearOperator(shape, matvec=lambda x: Mat(x))
+
+    toll = tol
+    x = np.zeros((shape[0], ))
+    #solver = krylov.cg
+    solver = krylov.gmres
+    while la.norm(rhs - Mat(x)) > tol * la.norm(rhs):
+        x = np.zeros((shape[0], ))
+        res = []
+        tt = time()
+        x, info = solver(A, b,
+                         tol=toll,
+                         M=Pl,
+                         residuals=res,
+                         restrt=None,
+                         maxiter=shape[0])
+        ts = time() - tt
+        print(info, len(res),
+              la.norm(rhs - Mat(x)) / la.norm(rhs),
+              la.norm(Pl(rhs) - Pl(Mat(x))) / la.norm(Pl(rhs)))
+        toll = toll / 10
+        if len(res) > shape[0]:
+            print('converged ?')
+            break
     n = la.norm(b)
     if len(res) > 1:
         resn = [ v / n for v in res ]
-        resn.append(la.norm(f - V(x)) / la.norm(f))
+        resn.append(la.norm(rhs - Mat(x)) / la.norm(rhs))
     else:
         resn = [-1]
-    return resn[:], ts, x
-
-def solve(V, f, Mr=None, Ml=None):
-    if Mr is not None:
-        mr = lambda x: Mr(x)
-    else:
-        mr = lambda x: x
-    if Ml is not None:
-        ml = lambda x: Ml(x)
-    else:
-        ml = lambda x: x
-    Pr = spla.LinearOperator(V.shape, matvec=mr)
-    Pl = spla.LinearOperator(V.shape, matvec=ml)
-    A, b = spla.LinearOperator(V.shape, matvec=lambda x: V(x)), f
-    linsys = krypy.linsys.LinearSystem(A, b,
-                                       Mr=Pr, Ml=Pl,
-                                       self_adjoint=True,
-                                       positive_definite=True)
-    try:
-        tt = time()
-        info = krypy.linsys.Cg(linsys)
-    except ConvergenceError as e:
-        info = e.solver
-    finally:
-        ts = time() - tt
-    print(info.iter)
-
-    if np.isnan(info.resnorms[-1]):
-        resn, x = [-1], info.x0
-    else:
-        resn, x = info.resnorms, info.xk
-    x = x.reshape((x.shape[0], ))
-    resn.append(la.norm(f - V(x)) / la.norm(f))
     return resn, ts, x
-
 
 
 grid = bem.shapes.sphere(h=0.5)
 
-for spV, spW in spaces:
+P0 = bem.function_space(grid, "DP", 0)
+P1 = bem.function_space(grid, "P", 1)
 
-    if spV == spW:
-        name, order = spV
-        test_V = tria_V = bem.function_space(grid, name, order)
-        test_W = tria_W = test_V
-    else:
-        name, order = spV
-        test_V = tria_V = bem.function_space(grid, name, order)
-        name, order = spW
-        test_W = tria_W = bem.function_space(grid, name, order)
+P0d = bem.function_space(grid, "DUAL", 0)
+P1b = bem.function_space(grid, "B-P", 1)
 
-    opV = bem.operators.boundary.laplace.single_layer(tria_V, tria_W, test_V)
-    opW = bem.operators.boundary.laplace.hypersingular(tria_W, tria_V, test_W)
+opV00 = bem.operators.boundary.laplace.single_layer(P0, P1, P0)
+opW00 = bem.operators.boundary.laplace.hypersingular(P0, P1, P0)
+opJ00 = bem.operators.boundary.sparse.identity(P0, P1, P0)
 
-    opJ = bem.operators.boundary.sparse.identity(opW.domain,
-                                                 opV.dual_to_range,
-                                                 opV.dual_to_range)
-    opG = bem.operators.boundary.sparse.identity(opV.domain,
-                                                 opW.dual_to_range,
-                                                 opW.dual_to_range)
+opV = bem.operators.boundary.laplace.single_layer(P0d, P1b, P0d)
+opW = bem.operators.boundary.laplace.hypersingular(P1b, P0d, P1b)
 
-    print('Assembling V...')
-    tt = time()
-    V = opV.weak_form()
-    tt_V = time() - tt
+opJ = bem.operators.boundary.sparse.identity(opV.domain,
+                                             opW.dual_to_range,
+                                             opW.dual_to_range)
+opG = bem.operators.boundary.sparse.identity(opW.domain,
+                                             opV.dual_to_range,
+                                             opV.dual_to_range)
 
-    print('Assembling W...')
-    tt = time()
-    W = opW.weak_form()
-    tt_W = time() - tt
+print('Assembling V00...')
+tt = time()
+V00 = opV00.weak_form()
+tt_V00 = time() - tt
 
-    Jw = opJ.weak_form()
-    J = Jw.sparse_operator
-    iJlu = spla.splu(J)
-    Jt = J.transpose()
-    iJtlu = spla.splu(Jt)
-    iJ = spla.LinearOperator(iJlu.shape, matvec=iJlu.solve)
-    iJt = spla.LinearOperator(iJtlu.shape, matvec=iJtlu.solve)
+J00w = opJ00.weak_form()
+J00 = J00w.sparse_operator
+iJ00lu = spla.splu(J00)
+iJ00 = spla.LinearOperator(iJ00lu.shape, matvec=iJ00lu.solve)
 
-    Gw = opG.weak_form()
-    G = Gw.sparse_operator
-    iGlu = spla.splu(G)
-    Gt = G.transpose()
-    iGtlu = spla.splu(Gt)
-    iG = spla.LinearOperator(iGlu.shape, matvec=iGlu.solve)
-    iGt = spla.LinearOperator(iGtlu.shape, matvec=iGtlu.solve)
+print('Assembling V...')
+tt = time()
+V = opV.weak_form()
+tt_V = time() - tt
 
-    gf = bem.GridFunction(test_V, fun=fdata)
-    f = gf.projections()
+print('Assembling W...')
+tt = time()
+W = opW.weak_form()
+tt_W = time() - tt
 
-    print('Solving V...')
-    res_V, ts_V, x_V = solve(V, f)
+Jw = opJ.weak_form()
+J = Jw.sparse_operator
+iJlu = spla.splu(J)
+Jt = J.transpose()
+iJtlu = spla.splu(Jt)
+iJ = spla.LinearOperator(iJlu.shape, matvec=iJlu.solve)
+iJt = spla.LinearOperator(iJtlu.shape, matvec=iJtlu.solve)
 
-    print('l Solving iJV...')
-    lres_iJV, lts_iJV, lx_iJV = solve(V, f, Ml=lambda x: iJ(x))
+Gw = opG.weak_form()
+G = Gw.sparse_operator
+iGlu = spla.splu(G)
+Gt = G.transpose()
+iGtlu = spla.splu(Gt)
+iG = spla.LinearOperator(iGlu.shape, matvec=iGlu.solve)
+iGt = spla.LinearOperator(iGtlu.shape, matvec=iGtlu.solve)
 
-    print('l Solving iJtV...')
-    lres_iJtV, lts_iJtV, lx_iJtV = solve(V, f, Ml=lambda x: iJt(x))
+gf0 = bem.GridFunction(P0, fun=fdata)
+f0 = gf0.projections()
 
-    print('r Solving iJV...')
-    rres_iJV, rts_iJV, rx_iJV = solve(V, f, Mr=lambda x: iJ(x))
+gf = bem.GridFunction(P0d, fun=fdata)
+f = gf.projections()
 
-    print('r Solving iJtV...')
-    rres_iJtV, rts_iJtV, rx_iJtV = solve(V, f, Mr=lambda x: iJt(x))
+print('Solving V00...')
+res_V0, ts_V0, x_V0 = solve(V00, f0)
 
-    print('l Solving WiJtV...')
-    lres_WiJtV, lts_WiJtV, lx_WiJtV = solve(V, f, Ml=lambda x: W(iJt(x)))
+print('Solving iJV...')
+res_iJV0, ts_iJV0, x_iJV0 = solve(V00, f0, Ml=lambda x: iJ00(x))
 
-    print('l Solving iJWiJtV...')
-    lres_iJWiJtV, lts_iJWiJtV, lx_iJWiJtV = solve(V, f,
-                                                  Ml=lambda x: iJ(W(iJt(x))))
+print('Solving V...')
+res_V, ts_V, x_V = solve(V, f)
 
-    print('lr Solving ViGtW...')
-    rres_ViGtW, rts_ViGtW, rx_ViGtW = solve(V, f, Mr=lambda x: iGt(W(x)))
+print('Solving iJtV...')
+res_iJtV, ts_iJtV, x_iJtV = solve(V, f, Ml=lambda x: iJt(x),
+                                  force_left=False)
 
-    print('lr Solving iGViGtW...')
-    res_iGViGtW, ts_iGViGtW, x_iGViGtW = solve(V, f,
-                                                  Ml=lambda x: iG(x),
-                                                  Mr=lambda x: iGt(W(x)))
+print('Solving WiJtV...')
+res_WiJtV, ts_WiJtV, x_WiJtV = solve(V, f, Ml=lambda x: W(iJt(x)),
+                                     force_left=False)
+
+print('Solving iJWiJtV...')
+res_iJWiJtV, ts_iJWiJtV, x_iJWiJtV = solve(V, f, tol=1e-8,
+                                           Ml=lambda x: iJ(W(iJt(x))),
+                                           force_left=False)
 
 
 
 its = lambda ll: [ i for i, _ in enumerate(ll) ]
 plt.figure()
 lw, ms = 3, 10
-plt.semilogy(its(res_V), res_V, 'k--', label='V',
+plt.semilogy(its(res_V0), res_V0, 'k-', label='V | P0',
              linewidth=lw, markersize=ms)
-plt.semilogy(its(rres_iJV), rres_iJV, 'k-', label='iJV',
+plt.semilogy(its(res_iJV0), res_iJV0, 'k--', label='J^-1 V | P0',
              linewidth=lw, markersize=ms)
-plt.semilogy(its(lres_iJV), lres_iJV, 'k-.', label='ViJ',
+plt.semilogy(its(res_V), res_V, 'b-', label='V | dP0',
              linewidth=lw, markersize=ms)
-plt.semilogy(its(lres_WiJtV), lres_WiJtV, 'r--', label='WiJtV',
+plt.semilogy(its(res_iJtV), res_iJtV, 'b--', label='J^-T V | dP0/bP1',
              linewidth=lw, markersize=ms)
-plt.semilogy(its(lres_iJWiJtV), lres_iJWiJtV, 'r-', label='iJWiJtV',
+plt.semilogy(its(res_WiJtV), res_WiJtV, 'r-', label='W J^-T V | dP0/bP1',
              linewidth=lw, markersize=ms)
-plt.semilogy(its(rres_ViGtW), rres_ViGtW, 'b--', label='ViGtW',
-             linewidth=lw, markersize=ms)
-plt.semilogy(its(res_iGViGtW), res_iGViGtW, 'b--', label='iGViGtW',
+plt.semilogy(its(res_iJWiJtV), res_iJWiJtV, 'r--',
+             label='J^-1 W J^-T V | dP0/bP1',
              linewidth=lw, markersize=ms)
 
 plt.legend()
