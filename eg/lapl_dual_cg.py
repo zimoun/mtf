@@ -11,11 +11,14 @@ import krylov
 
 import bempp.api as bem
 
+bem.global_parameters.assembly.boundary_operator_assembly_type = 'hmat'
+#bem.global_parameters.hmat.coarsening = False
+
 
 def fdata(x, n, d, res):
     res[0] = x[0] + x[1] + x[2]
 
-def solve(Mat, rhs, tol=1e-5, Ml=None, force_left=False):
+def solve(Mat, rhs, tol=1e-5, Ml=None, force_left=False, check=False):
     shape = Mat.shape
     if Ml is not None:
         if force_left:
@@ -34,20 +37,22 @@ def solve(Mat, rhs, tol=1e-5, Ml=None, force_left=False):
         Pl = spla.LinearOperator(shape, matvec=ml)
         A = spla.LinearOperator(shape, matvec=lambda x: Mat(x))
 
+    ok = True
     toll = tol
     x = np.zeros((shape[0], ))
-    #solver = krylov.cg
-    solver = krylov.gmres
-    while la.norm(rhs - Mat(x)) > tol * la.norm(rhs):
+    solver = krylov.cg
+    #solver = krylov.gmres
+    #solver = spla.cg
+    while la.norm(rhs - Mat(x)) > tol * la.norm(rhs) and ok:
         x = np.zeros((shape[0], ))
         res = []
         tt = time()
         x, info = solver(A, b,
                          tol=toll,
                          M=Pl,
-                         residuals=res,
-                         restrt=None,
-                         maxiter=shape[0])
+                         residuals=res)
+                         # restrt=None,
+                         # maxiter=shape[0])
         ts = time() - tt
         print(info, len(res),
               la.norm(rhs - Mat(x)) / la.norm(rhs),
@@ -55,6 +60,8 @@ def solve(Mat, rhs, tol=1e-5, Ml=None, force_left=False):
         toll = toll / 10
         if len(res) > shape[0]:
             print('converged ?')
+            break
+        if not check:
             break
     n = la.norm(b)
     if len(res) > 1:
@@ -65,7 +72,7 @@ def solve(Mat, rhs, tol=1e-5, Ml=None, force_left=False):
     return resn, ts, x
 
 
-grid = bem.shapes.sphere(h=0.5)
+grid = bem.shapes.sphere(h=0.1)
 
 P0 = bem.function_space(grid, "DP", 0)
 P1 = bem.function_space(grid, "P", 1)
@@ -147,7 +154,7 @@ res_WiJtV, ts_WiJtV, x_WiJtV = solve(V, f, Ml=lambda x: W(iJt(x)),
                                      force_left=False)
 
 print('Solving iJWiJtV...')
-res_iJWiJtV, ts_iJWiJtV, x_iJWiJtV = solve(V, f, tol=1e-8,
+res_iJWiJtV, ts_iJWiJtV, x_iJWiJtV = solve(V, f,
                                            Ml=lambda x: iJ(W(iJt(x))),
                                            force_left=False)
 
