@@ -270,6 +270,6 @@ axarr[1].legend(loc=2)
 axarr[1].set_ylabel('Assembling CPU time')
 axarr[1].set_xlabel('DoF')
 
-axarr[0].set_title("Laplace k = {}".format(k))
+axarr[0].set_title("Laplace")
 
 plt.show()
