@@ -73,7 +73,7 @@ def solve(Mat, rhs, tol=1e-5, Ml=None, force_left=False, check=False):
     return resn, ts, x
 #
 
-H = [5, 10, 20, 30, 40, 50, 75, 100]
+H = [5, 10, 20, 30]#, 40, 50, 75, 100]
 
 Dof = np.zeros((len(H), 7))
 Its = np.zeros((len(H), 7))
@@ -87,7 +87,7 @@ Eigminn = np.zeros((len(H), 7))
 for i, h in enumerate(H):
     print(h)
 
-    k = 0.5 * np.pi
+    k = 0.25 * np.pi
     ll = 2 * np.pi / k
     grid = bem.shapes.sphere(h=ll/h)
 
@@ -226,6 +226,9 @@ for i, h in enumerate(H):
 
     print(wm, wM)
 
+    Eigmin[i, 6], Eigmax[i, 6] = abs(wm[-1]), abs(wM[-1])
+    Eigminn[i, 6] = abs(wm[-2])
+
 
     print('Solving V...')
     res_V, ts_V, x_V = solve(V, f)
@@ -317,8 +320,8 @@ axarr[0].loglog(Dof[:, 0], Its[:, 0], 'ko-', label='V | P0',
            linewidth=lw, markersize=ms)
 axarr[0].loglog(Dof[:, 1], Its[:, 1], 'kd--', label='J^-1 V | P0',
            linewidth=lw, markersize=ms)
-# axarr[0].loglog(Dof[:, 6], Its[:, 6], 'ks:', label='J^-1 W_h J^-1 V | P0',
-#            linewidth=lw, markersize=ms)
+axarr[0].loglog(Dof[:, 6], Its[:, 6], 'ks:', label='J^-1 W J^-1 V | P0',
+           linewidth=lw, markersize=ms)
 axarr[0].loglog(Dof[:, 2], Its[:, 2], 'bo-', label='V | dP0',
            linewidth=lw, markersize=ms)
 axarr[0].loglog(Dof[:, 3], Its[:, 3], 'bd--', label='J^-T V | dP0/bP1',
@@ -335,8 +338,8 @@ axarr[0].set_ylabel('Number of Iterations')
 
 axarr[1].loglog(Dof[:, 0], Tps[:, 0], 'ko-', label='V | P0',
            linewidth=lw, markersize=ms)
-# axarr[1].loglog(Dof[:, 6], Tps[:, 6], 'kd--', label='W_h | P0',
-#            linewidth=lw, markersize=ms)
+axarr[1].loglog(Dof[:, 6], Tps[:, 6], 'kd--', label='W | P0',
+           linewidth=lw, markersize=ms)
 axarr[1].loglog(Dof[:, 2], Tps[:, 2], 'bo-', label='V | dP0',
            linewidth=lw, markersize=ms)
 axarr[1].loglog(Dof[:, 5], Tps[:, 5], 'rd--', label='W | bP1',
@@ -361,6 +364,10 @@ plt.loglog(Dof[:, 0], Eigmin[:, 0], 'ko:', label='V | P0',
 plt.loglog(Dof[:, 1], Eigmax[:, 1], 'kd--', label='J^-1 V | P0',
            linewidth=lw, markersize=ms)
 plt.loglog(Dof[:, 1], Eigmin[:, 1], 'kd:', label='J^-1 V | P0',
+           linewidth=lw, markersize=ms)
+plt.loglog(Dof[:, 6], Eigmax[:, 6], 'ks--', label='J^-1 W J^-1 V | P0',
+           linewidth=lw, markersize=ms)
+plt.loglog(Dof[:, 6], Eigmin[:, 6], 'ks:', label='J^-1 W J^-1 V | P0',
            linewidth=lw, markersize=ms)
 plt.loglog(Dof[:, 2], Eigmax[:, 2], 'bo-', label='V | dP0',
            linewidth=lw, markersize=ms)
@@ -391,6 +398,8 @@ plt.loglog(Dof[:, 0], Eigmax[:, 0] / Eigmin[:, 0], 'ko-', label='V | P0',
            linewidth=lw, markersize=ms)
 plt.loglog(Dof[:, 1], Eigmax[:, 1] / Eigmin[:, 1], 'kd--', label='J^-1 V | P0',
            linewidth=lw, markersize=ms)
+plt.loglog(Dof[:, 1], Eigmax[:, 6] / Eigmin[:, 6], 'ks:', label='J^-1 W J^-1 V | P0',
+           linewidth=lw, markersize=ms)
 plt.loglog(Dof[:, 2], Eigmax[:, 2] / Eigmin[:, 2], 'bo-', label='V | dP0',
            linewidth=lw, markersize=ms)
 plt.loglog(Dof[:, 3], Eigmax[:, 3] / Eigmin[:, 3], 'bd--', label='J^-T V | dP0/bP1',
@@ -417,6 +426,10 @@ plt.loglog(Dof[:, 0], Eigminn[:, 0], 'ko:', label='V | P0',
 plt.loglog(Dof[:, 1], Eigmax[:, 1], 'kd--', label='J^-1 V | P0',
            linewidth=lw, markersize=ms)
 plt.loglog(Dof[:, 1], Eigminn[:, 1], 'kd:', label='J^-1 V | P0',
+           linewidth=lw, markersize=ms)
+plt.loglog(Dof[:, 6], Eigmax[:, 6], 'ks--', label='J^-1 W J^-1 V | P0',
+           linewidth=lw, markersize=ms)
+plt.loglog(Dof[:, 6], Eigminn[:, 6], 'ks:', label='J^-1 W J^-1 V | P0',
            linewidth=lw, markersize=ms)
 plt.loglog(Dof[:, 2], Eigmax[:, 2], 'bo-', label='V | dP0',
            linewidth=lw, markersize=ms)
@@ -446,6 +459,8 @@ plt.figure()
 plt.loglog(Dof[:, 0], Eigmax[:, 0] / Eigminn[:, 0], 'ko-', label='V | P0',
            linewidth=lw, markersize=ms)
 plt.loglog(Dof[:, 1], Eigmax[:, 1] / Eigminn[:, 1], 'kd--', label='J^-1 V | P0',
+           linewidth=lw, markersize=ms)
+plt.loglog(Dof[:, 1], Eigmax[:, 6] / Eigminn[:, 6], 'ks:', label='J^-1 W J^-1 V | P0',
            linewidth=lw, markersize=ms)
 plt.loglog(Dof[:, 2], Eigmax[:, 2] / Eigminn[:, 2], 'bo-', label='V | dP0',
            linewidth=lw, markersize=ms)
