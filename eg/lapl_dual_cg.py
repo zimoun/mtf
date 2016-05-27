@@ -234,6 +234,11 @@ for i, h in enumerate(H):
     # plt.title("h = {}".format(h))
     # plt.show(block=False)
 
+##
+##
+##
+print('Be careful: h = O(n^2)')
+
 lw, ms = 3, 10
 f, axarr = plt.subplots(2, sharex=True)
 axarr[0].loglog(Dof[:, 0], Its[:, 0], 'ko-', label='V | P0',
