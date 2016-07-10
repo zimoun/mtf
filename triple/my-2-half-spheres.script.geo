@@ -13,7 +13,7 @@ k = 0.3 * Pi;
 rad = 1.0;
 lc = 2*Pi / (alpha * k);
 
-a = 1;
+a = 5;
 
 Point(1) = {0.0, 0.0, 0.0, lc};
 Point(2) = {rad, 0.0, 0.0, lc/a};
@@ -103,6 +103,10 @@ Save "full-interfaces.msh" ;
 Delete Physicals;
 Physical Surface(10) = {-28, -26, -16, -14, -20, -24, -22, -18};
 Save "0.msh" ;
+
+Delete Physicals;
+Physical Surface(10) = {28, 26, 16, 14, 20, 24, 22, 18};
+Save "00.msh" ;
 
 Delete Physicals;
 Physical Surface(1) = {-240, -160, 16, 14, 20, 24, -200, -140};
