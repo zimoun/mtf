@@ -459,7 +459,7 @@ gin2 = bem.GridFunction(s2, coefficients=x[2*N0+2*N1:2*N0+2*N1+2*N2])
 print(la.norm(2 * A(x) - J(x)))
 print(la.norm(J(x) - X(x) - 2 * b))
 
-y = iJ(0.5 * J(x) + A(x))
+y = iJ(0.5 * J(b) + A(b))
 bb = 0.5 * (J(y) - X(y))
 
 print('solve')
