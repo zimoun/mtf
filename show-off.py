@@ -13,8 +13,8 @@ from domains import *
 lmbda = 0.7
 kRef = 2 * np.pi / lmbda
 
-meshname = 'geo/mtf-logo.msh'
-#meshname = 'geo/rings.msh'
+#meshname = 'geo/mtf-logo.msh'
+meshname = 'geo/rings.msh'
 
 dd = [
     { 'name': 0,
@@ -23,15 +23,15 @@ dd = [
       },
     { 'name': 'M',
       'union': 1,
-      'phys': 2.,
+      'phys': 4.,
       },
     { 'name': 'T',
       'union': 2,
-      'phys': 2.,
+      'phys': 9.,
       },
     { 'name': 'F',
       'union': 3,
-      'phys': 2.,
+      'phys': 16.,
       },
 ]
 doms = Domains(dd)

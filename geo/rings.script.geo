@@ -1,11 +1,22 @@
+lmbda = 0.5;
+nlambda = 10;
 
-lc1 = 1;
+eps1 = 4;
+eps2 = 9;
+eps3 = 16;
+
+kref = 2 * Pi / lmbda;
+k1 = Sqrt(eps1) * kref;
+k2 = Sqrt(eps2) * kref;
+k3 = Sqrt(eps3) * kref;
+
+lc1 = 2 * Pi / k1;
 rad1 = 1;
 
-lc2 = 1;
+lc2 = 2 * Pi / k2;
 rad2 = 1;
 
-lc3 = 1;
+lc3 = 2 * Pi / k3;
 rad3 = 1;
 
 
