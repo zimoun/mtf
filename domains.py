@@ -484,7 +484,7 @@ def write_params_geo(dictconf, file_geo='geo/sphere-concentric.script.geo'):
         fp_write("A", A)
         fp_write("B", B)
         fp.write('\n// Only used by cylinder\n')
-        fp.write("Lc = {};\n", Lc)
+        fp.write("Lc = {};\n".format(Lc))
         fp.write('\n// Physical tag: then consecutive Ndom numbering\n')
         fp.write("tag = {};".format(tag))
         fp.write("\n\n////done///\n\n\n")
@@ -521,6 +521,34 @@ def merge_msh(dalls, out='all.msh', tmp='geo/Merge-all-meshes_tmp.script.geo'):
             if dd['name'] == '0':
                 doms[0]['union'].extend(dd['union'])
             else:
+                doms.append(dd)
+
+    return doms
+
+def merge_msh_bubbles(dalls, out='all.msh', tmp='geo/Merge-all-meshes_tmp.script.geo'):
+    with open(tmp, 'w') as fp:
+        for dgen in dalls:
+            name = dgen['config']['meshname']
+            fp.write("Merge '{}';\n".format(name))
+        fp.write("Save 'all.msh';\n")
+    call([GMSH, tmp, '-'])
+
+    # TODO: fix this not robust merge because now I am tired !!
+    doms = [
+        {
+            'name': '0',
+            'phys': 1,
+            'union': []
+        }
+    ]
+    for i, d in enumerate(dalls):
+        for j, dd in enumerate(d['doms']):
+            if j == 0:
+                doms[0]['union'].extend(dd['union'])
+
+            else:
+                dd['name'] = i+j
+                dd['phys'] = d['config']['phys'][1]
                 doms.append(dd)
 
     return doms
@@ -666,18 +694,35 @@ if __name__ == "__main__":
 
     from subprocess import call
 
-    conf = sanitize_config(Nints=3, init_offset=True)
+    # conf = sanitize_config(Nints=3, init_offset=True)
+    # dgen = generate_concentric_dict(conf)
+    # cmds = write_params_geo(conf)
+    # call(cmds)
+
+    # conff = sanitize_config(Nints=5, tag=4)
+    # conff['center'] = (3, 0, 0)
+    # dgenn = generate_concentric_dict(conff)
+    # cmds = write_params_geo(conff)
+    # call(cmds)
+
+    # cconff = sanitize_config(Nints=4, tag=9)
+    # cconff['center'] = (0, 3, 3)
+    # ddgenn = generate_concentric_dict(cconff)
+    # cmds = write_params_geo(cconff)
+    # call(cmds)
+
+    conf = sanitize_config(Nints=1, init_offset=True)
     dgen = generate_concentric_dict(conf)
     cmds = write_params_geo(conf)
     call(cmds)
 
-    conff = sanitize_config(Nints=5, tag=4)
+    conff = sanitize_config(Nints=1, tag=4)
     conff['center'] = (3, 0, 0)
     dgenn = generate_concentric_dict(conff)
     cmds = write_params_geo(conff)
     call(cmds)
 
-    cconff = sanitize_config(Nints=4, tag=9)
+    cconff = sanitize_config(Nints=1, tag=9)
     cconff['center'] = (0, 3, 3)
     ddgenn = generate_concentric_dict(cconff)
     cmds = write_params_geo(cconff)
@@ -690,7 +735,7 @@ if __name__ == "__main__":
     myd.write2dot('graph.dot')
     call(['dot', '-Teps', 'graph.dot'], stdout=open('graph.eps', 'wb'))
 
-    confff = sanitize_config(Nints=5, tag=3)
-    dgennn = generate_disjoint_dict(confff)
-    cmds = write_params_geo(confff, file_geo='geo/sphere-disjoint.script.geo')
-    call(cmds)
+    # confff = sanitize_config(Nints=5, tag=3)
+    # dgennn = generate_disjoint_dict(confff)
+    # cmds = write_params_geo(confff, file_geo='geo/sphere-disjoint.script.geo')
+    # call(cmds)
