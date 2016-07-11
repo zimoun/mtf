@@ -72,7 +72,7 @@ def solve(Mat, rhs, tol=1e-5, Ml=None, force_left=False, check=False):
     return resn, ts, x
 #
 
-H = [1., 0.75, 0.5, 0.25, 0.1, 0.075] #, 0.05, 0.025]
+H = [1., 0.75, 0.5, 0.25, 0.2, 0.15, 0.125] #, 0.1] #, 0.075] #, 0.05, 0.025]
 
 Dof = np.zeros((len(H), 7))
 Its = np.zeros((len(H), 7))

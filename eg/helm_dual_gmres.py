@@ -75,6 +75,7 @@ def solve(Mat, rhs, tol=1e-5, Ml=None, force_left=False, check=False):
 
 H = [5, 10, 20, 30, 40, 50, 75, 100]
 
+HH = np.zeros((len(H)))
 Dof = np.zeros((len(H), 7))
 Its = np.zeros((len(H), 7))
 Tps = np.zeros((len(H), 7))
@@ -83,9 +84,10 @@ STps = np.zeros((len(H), 7))
 for i, h in enumerate(H):
     print(h)
 
-    k = 0.5 * np.pi
+    k = 0.1 * np.pi
     ll = 2 * np.pi / k
     grid = bem.shapes.sphere(h=ll/h)
+    HH[i] = ll/h
 
     P0 = bem.function_space(grid, "DP", 0)
     P1 = bem.function_space(grid, "P", 1)
@@ -239,42 +241,61 @@ for i, h in enumerate(H):
     # plt.title("h = {}".format(h))
     # plt.show(block=False)
 
-lw, ms = 3, 10
-f, axarr = plt.subplots(2, sharex=True)
-axarr[0].loglog(Dof[:, 0], Its[:, 0], 'ko-', label='V | P0',
-           linewidth=lw, markersize=ms)
-axarr[0].loglog(Dof[:, 1], Its[:, 1], 'kd--', label='J^-1 V | P0',
-           linewidth=lw, markersize=ms)
-axarr[0].loglog(Dof[:, 6], Its[:, 6], 'ks:', label='J^-1 W J^-1 V | P0',
-           linewidth=lw, markersize=ms)
-axarr[0].loglog(Dof[:, 2], Its[:, 2], 'bo-', label='V | dP0',
-           linewidth=lw, markersize=ms)
-axarr[0].loglog(Dof[:, 3], Its[:, 3], 'bd--', label='J^-T V | dP0/bP1',
-           linewidth=lw, markersize=ms)
-# axarr[0].loglog(Dof[:, 4], Its[:, 4], 'ro-', label='W J^-T V | dP0/bP1',
+# lw, ms = 3, 10
+# f, axarr = plt.subplots(2, sharex=True)
+# axarr[0].loglog(Dof[:, 0], Its[:, 0], 'ko-', label='V | P0',
 #            linewidth=lw, markersize=ms)
-axarr[0].loglog(Dof[:, 5], Its[:, 5], 'rd--', label='J^-1 W J^-T V | dP0/bP1',
+# axarr[0].loglog(Dof[:, 1], Its[:, 1], 'kd--', label='J^-1 V | P0',
+#            linewidth=lw, markersize=ms)
+# axarr[0].loglog(Dof[:, 6], Its[:, 6], 'ks:', label='J^-1 W J^-1 V | P0',
+#            linewidth=lw, markersize=ms)
+# axarr[0].loglog(Dof[:, 2], Its[:, 2], 'bo-', label='V | dP0',
+#            linewidth=lw, markersize=ms)
+# axarr[0].loglog(Dof[:, 3], Its[:, 3], 'bd--', label='J^-T V | dP0/bP1',
+#            linewidth=lw, markersize=ms)
+# # axarr[0].loglog(Dof[:, 4], Its[:, 4], 'ro-', label='W J^-T V | dP0/bP1',
+# #            linewidth=lw, markersize=ms)
+# axarr[0].loglog(Dof[:, 5], Its[:, 5], 'rd--', label='J^-1 W J^-T V | dP0/bP1',
+#            linewidth=lw, markersize=ms)
+
+# axarr[0].grid(True, which="both")
+# axarr[0].legend(loc=2)
+# axarr[0].set_xlabel('Dof')
+# axarr[0].set_ylabel('Number of Iterations')
+
+# axarr[1].loglog(Dof[:, 0], Tps[:, 0], 'ko-', label='V | P0',
+#            linewidth=lw, markersize=ms)
+# axarr[1].loglog(Dof[:, 6], Tps[:, 6], 'ks:', label='W | P0',
+#            linewidth=lw, markersize=ms)
+# axarr[1].loglog(Dof[:, 2], Tps[:, 2], 'bo-', label='V | dP0',
+#            linewidth=lw, markersize=ms)
+# axarr[1].loglog(Dof[:, 5], Tps[:, 5], 'rd--', label='W | bP1',
+#            linewidth=lw, markersize=ms)
+
+# axarr[1].grid(True, which="both")
+# axarr[1].legend(loc=2)
+# axarr[1].set_ylabel('Assembling CPU time')
+# axarr[1].set_xlabel('DoF')
+
+# axarr[0].set_title("Helmholtz k = {}".format(k))
+
+# plt.show()
+
+plt.figure()
+plt.loglog(HH, Tps[:, 0], 'ko-', label='V | P1',
+           linewidth=lw, markersize=ms)
+plt.loglog(HH, Tps[:, 6], 'ks:', label='W | P1',
+           linewidth=lw, markersize=ms)
+plt.loglog(HH, Tps[:, 2], 'bo-', label='V | dP0',
+           linewidth=lw, markersize=ms)
+plt.loglog(HH, Tps[:, 5], 'rd--', label='W | bP1',
            linewidth=lw, markersize=ms)
 
-axarr[0].grid(True, which="both")
-axarr[0].legend(loc=2)
-axarr[0].set_xlabel('Dof')
-axarr[0].set_ylabel('Number of Iterations')
+plt.grid(True, which="both")
+plt.legend(loc=2)
+plt.ylabel('Assembling CPU time')
+plt.xlabel('h')
 
-axarr[1].loglog(Dof[:, 0], Tps[:, 0], 'ko-', label='V | P0',
-           linewidth=lw, markersize=ms)
-axarr[1].loglog(Dof[:, 6], Tps[:, 6], 'ks:', label='W | P0',
-           linewidth=lw, markersize=ms)
-axarr[1].loglog(Dof[:, 2], Tps[:, 2], 'bo-', label='V | dP0',
-           linewidth=lw, markersize=ms)
-axarr[1].loglog(Dof[:, 5], Tps[:, 5], 'rd--', label='W | bP1',
-           linewidth=lw, markersize=ms)
-
-axarr[1].grid(True, which="both")
-axarr[1].legend(loc=2)
-axarr[1].set_ylabel('Assembling CPU time')
-axarr[1].set_xlabel('DoF')
-
-axarr[0].set_title("Helmholtz k = {}".format(k))
+set_title("Sphere --  k = {}".format(k))
 
 plt.show()
