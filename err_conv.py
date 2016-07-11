@@ -20,7 +20,7 @@ from krylov import gmres
 #################################################
 
 kRef_rc = 0.1 * np.pi
-eps_rc = 1
+eps_rc = 2
 
 N = 1
 geoconf = sanitize_config(Nints=N,
@@ -121,6 +121,8 @@ maxiter = 1000
 #################################################
 
 Size = []
+H = []
+ll = 2. * np.pi * kRef
 
 Ecald, Etrans = [], []
 Ecald_mie, Etrans_mie = [], []
@@ -140,6 +142,8 @@ for nlambda in nlambdas:
     geoconf['nlambda'] = nlambda
     cmds = write_params_geo(geoconf)
     system("gmsh geo/sphere-disjoint.script.geo -")
+
+    H.append(ll / nlambda)
 
     mtf = MultiTrace(geoconf['kRef'], 'geo/'+geoconf['meshname'], dd)
 
@@ -289,6 +293,7 @@ for nlambda in nlambdas:
 sio.savemat('dat/err.mat',
             {'kRef':kRef, 'eps':eps, 'Ndom':Ndom,
              'Size':Size,
+             'H':H,
              'Nlambdas':nlambdas,
              'Ecald':Ecald, 'Etrans':Etrans,
              'Ecald_mie':Ecald_mie, 'Etrans_mie':Etrans_mie,
