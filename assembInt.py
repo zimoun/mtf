@@ -27,7 +27,7 @@ meshname = "./geo/sphere-disjoint.msh"
 # wl = 6.0
 # kRef = 2 * np.pi / wl
 
-kRef = 0.5 * np.pi
+kRef = 0.1 * np.pi
 
 # dd = [
 #     { 'name': '0',
@@ -48,7 +48,7 @@ kRef = 0.5 * np.pi
 dd = [
     { 'name': '0',
       'phys': 1,
-      'union': [-1, -2, -3],
+      'union': [-1, -2, 3],
   },
     { 'name': 'A',
       'phys': 2,
@@ -60,7 +60,7 @@ dd = [
   },
     { 'name': 'C',
       'phys': 4,
-      'union': 3,
+      'union': -3,
   }
 ]
 domains = Domains(dd)
@@ -143,7 +143,7 @@ for dom in domains:
     print('==Domain: {0}'.format(me))
     print('===Diag: Block #({0}, {0})'.format(ii))
 
-    eps = dom['phys']
+    eps, alpha, beta = dom['phys']
     k = kRef * np.sqrt(eps)
 
     opAA = bem.BlockedOperator(2, 2)
@@ -686,15 +686,15 @@ Mtau = lambda tau: tau * (A - J) + J - X
 #################################################
 #################################################
 
-Yw = opY.weak_form()
-Zw = opZ.weak_form()
+# Yw = opY.weak_form()
+# Zw = opZ.weak_form()
 
-Y = spla.LinearOperator(shape, matvec=Yw.matvec, dtype=complex)
-Z = spla.LinearOperator(shape, matvec=Zw.matvec, dtype=complex)
+# Y = spla.LinearOperator(shape, matvec=Yw.matvec, dtype=complex)
+# Z = spla.LinearOperator(shape, matvec=Zw.matvec, dtype=complex)
 
-Msp = (A - J) + (Z - Y)
-Mspp = (A - J) + Z * (J - X)
-Msppp = (A - J) + Z * iJ * (J - X)
+# Msp = (A - J) + (Z - Y)
+# Mspp = (A - J) + Z * (J - X)
+# Msppp = (A - J) + Z * iJ * (J - X)
 
 #################################################
 #################################################
@@ -969,42 +969,42 @@ print(e, ee, eee, eeee, eeeee)
 # ####################################
 # ####################################
 
-print('\nSP WO restart={0} maxiter={1}'.format(restart, maxiter))
-del res
-res = []
-Ms, bs = Msp,  Z(b)
-tt = time()
-xx, info = gmres(Ms, bs,
-                 orthog='mgs',
-                 tol=tol,
-                 residuals=res,
-                 restrt=restart,
-                 maxiter=maxiter)
-tt = time() - tt
-print(info, len(res))
-oResSPWO = np.array(res)
-ResSPWO = rescaleRes(oResSPWO, lambda x: x, bs)
-print('#time: {}'.format(tt))
+# print('\nSP WO restart={0} maxiter={1}'.format(restart, maxiter))
+# del res
+# res = []
+# Ms, bs = Msp,  Z(b)
+# tt = time()
+# xx, info = gmres(Ms, bs,
+#                  orthog='mgs',
+#                  tol=tol,
+#                  residuals=res,
+#                  restrt=restart,
+#                  maxiter=maxiter)
+# tt = time() - tt
+# print(info, len(res))
+# oResSPWO = np.array(res)
+# ResSPWO = rescaleRes(oResSPWO, lambda x: x, bs)
+# print('#time: {}'.format(tt))
 
-print('=Error-Calderon SP WO')
-y = A(xx)
-z = J(xx)
-e = la.norm(y - z)
-ee = la.norm(xx)
-print(e, ee, norm_b)
-print('-')
-y = At(xx)
-z = 0.5 * J(xx)
-e = la.norm(y - z)
-y = Ce(xx)
-ee = la.norm(y)
-y = Ci(xx)
-z = J(xx)
-eee = la.norm(y - z)
-y = CCi(xx)
-z = xx
-eeee = la.norm(y - z)
-print(e, ee, eee, eeee)
+# print('=Error-Calderon SP WO')
+# y = A(xx)
+# z = J(xx)
+# e = la.norm(y - z)
+# ee = la.norm(xx)
+# print(e, ee, norm_b)
+# print('-')
+# y = At(xx)
+# z = 0.5 * J(xx)
+# e = la.norm(y - z)
+# y = Ce(xx)
+# ee = la.norm(y)
+# y = Ci(xx)
+# z = J(xx)
+# eee = la.norm(y - z)
+# y = CCi(xx)
+# z = xx
+# eeee = la.norm(y - z)
+# print(e, ee, eee, eeee)
 
 
 # ####################################
@@ -1191,8 +1191,8 @@ plt.semilogy(its, res, 'm-', linewidth=3,  label='Tau')
 its, res = Res2Tuple(ResFWO)
 plt.semilogy(its, res, 'g--', linewidth=3,  label='BD')
 
-its, res = Res2Tuple(ResSPWO)
-plt.semilogy(its, res, 'm--', linewidth=3,  label='SP')
+# its, res = Res2Tuple(ResSPWO)
+# plt.semilogy(its, res, 'm--', linewidth=3,  label='SP')
 
 
 # its, res = Res2Tuple(ResPhiWO)
