@@ -1,3 +1,20 @@
+#!/usr/bin/env python
+# coding: utf8
+
+import numpy as np
+
+from assemb import MultiTrace, checker
+
+from time import time
+import scipy.linalg as la
+
+N = 50
+kRef = 0.01 * np.pi
+
+Lx, Ly, Lz = 5, 5, 5
+
+
+##################################
 
 import numpy as np
 import numpy.linalg as la
@@ -58,17 +75,6 @@ def gen_centers(rads, Lx=1., Ly=1., Lz=1.):
     print('#centers:', len(centers))
     return centers
 
-rads = [ 1, 1, 1, 1 ]
-centers = [ (0, 0, 0), (0, 0, 2.1), (2.1, 0, 0), (0, 2.1, 0)]
-
-# tf = check_centers((0, 2.1, 0), 1, centers, rads)
-
-
-
-N = 50
-kRef = 0.01 * np.pi
-
-Lx, Ly, Lz = 5, 5, 5
 
 rads = gen_rads(N)
 phys = gen_phys(N)
@@ -78,7 +84,6 @@ centers = gen_centers(rads, Lx, Ly, Lz)
 N = len(centers)
 rads = rads[:N]
 phys = phys[:N]
-
 
 dgens = []
 for i in range(N):
@@ -107,5 +112,72 @@ call(['dot', '-Teps', 'graph.dot'], stdout=open('graph.eps', 'wb'))
 
 dd = myd
 
-
 print(N)
+
+##################################
+
+meshname = "./geo/all.msh"
+
+
+mtf = MultiTrace(kRef, meshname, dd)
+
+At, X, J, iJ = mtf.tolinop()
+
+shape = mtf.shape
+
+A = 2.0 * At
+A2 = A * iJ * A
+
+Ce = 0.5 * J - At
+Ci = 0.5 * J + At
+
+Ce2 = Ce * iJ * Ce
+Ci2 = Ci * iJ * Ci
+
+x = np.random.rand(shape[0]) + 1j * np.random.rand(shape[0])
+xr = np.random.rand(shape[0])
+
+checker('A2 = J', A2, J, x)
+checker('exterior Proj.', Ce2, Ce, x)
+checker('interior Proj.', Ci2, Ci, x)
+checker('error-Calderon with random [no-sense]', A, J, x)
+
+#################################################
+#################################################
+
+def dir_data(x, normal, dom_ind, result):
+    result[0] =  -np.exp( 1j * kRef * x[1])
+
+def neu_data(x, normal, dom_ind, result):
+    result[0] = -1j * normal[1] * kRef * np.exp( 1j * kRef * x[1])
+
+#################################################
+#################################################
+
+b = mtf.rhs(dir_data, neu_data)
+M = A - X
+
+print('')
+print(mtf.shape, flush=True)
+print('')
+
+#################################################
+#################################################
+#################################################
+
+iA = iJ * A * iJ
+
+#################################################
+
+Pjac = iA
+
+E = mtf.upper()
+Pgs = iA + iA * E * iA
+
+
+CCi = iJ * (0.5 * J + At)
+CCe = (0.5 * J - At)
+
+B = J - X
+BD = B * CCi + CCe
+F = B * CCi
