@@ -10,7 +10,7 @@ import bempp.api as bem
 from assemb import MultiTrace, checker
 from domains import *
 
-lmbda = 0.7
+lmbda = 0.5
 kRef = 2 * np.pi / lmbda
 
 #meshname = 'geo/mtf-logo.msh'
@@ -91,7 +91,7 @@ from krylov import gmres, bicgstab
 
 tol = 1e-6
 res = []
-restart = 50
+restart = None
 if restart is None: scale = 1
 else: scale = restart
 
@@ -105,6 +105,21 @@ norm_b = la.norm(b)
 #################################################
 #################################################
 
+iA = iJ * A * iJ
+
+#################################################
+
+Pjac = iA
+
+E = mtf.upper()
+Pgs = iA + iA * E * iA
+
+Prec = Pjac
+
+#################################################
+#################################################
+#################################################
+
 def rescaleRes(res, P, b):
     scale = 1.0 / la.norm(P(b))
     new_res = scale * res
@@ -112,12 +127,12 @@ def rescaleRes(res, P, b):
 
 #################################################
 
-print('\nMass restart={0} maxiter={1}'.format(restart, maxiter), flush=True)
+print('\nPrec restart={0} maxiter={1}'.format(restart, maxiter), flush=True)
 del res
 res = []
 tt = time()
 xx, info = gmres(M, b,
-                 M = iJ,
+                 M = Prec,
                  orthog='mgs',
                  tol=tol,
                  residuals=res,
@@ -125,11 +140,12 @@ xx, info = gmres(M, b,
                  maxiter=maxiter)
 tt = time() - tt
 print(info, len(res))
-oResiJ = np.array(res)
-ResiJ = rescaleRes(oResiJ, iJ, b)
+oRes = np.array(res)
+Res = rescaleRes(oRes, Prec, b)
 print('#time: {}'.format(tt))
 
-checker('Calderon Mass', A, J, xx)
+checker('Calderon Prec', A, J, xx)
+checker('Transmission Prec', J, X, xx, b)
 
 #################################################
 
