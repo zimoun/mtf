@@ -88,6 +88,31 @@ def mieN_int(point, normal, dom_ind, result):
     val = mie_N4grid('int', kk, R, C, ce, ci, jumpe, jumpi, Nmodes, point)
     result[0] = val
 
+##
+
+def fmieD(point):
+    val = mie_D4grid(field, kk, R, C, ce, ci, jumpe, jumpi, Nmodes, point)
+    return val
+
+def fuinc(point):
+    return np.exp(1j * kRef * point[iincident])
+
+def fmieN(point):
+    """Return -neumann_solution"""
+    val = mie_N4grid(field, kk, R, C, ce, ci, jumpe, jumpi, Nmodes, point)
+    return -1.0 * val
+
+def fdnuinc(point):
+    return 1j * kRef * normal[1] * np.exp(1j * kRef * point[iincident])
+
+def fmieD_int(point):
+    val = mie_D4grid('int', kk, R, C, ce, ci, jumpe, jumpi, Nmodes, point)
+    return val
+
+def fmieN_int(point):
+    val = mie_N4grid('int', kk, R, C, ce, ci, jumpe, jumpi, Nmodes, point)
+    return val
+
 #################################################
 
 def rescaleRes(res, P, b):
@@ -183,7 +208,10 @@ for nlambda in nlambdas:
     checker('interior Proj.', Ci2, Ci, x)
     checker('error-Calderon with random [no-sense]', A, J, x)
 
+    print('')
     print('MTF Bott-Duffin')
+    print('')
+
     yy, niter, res, tt = my_gmres("\nGmres restart={0} maxiter={1}",
                                    BD, b, tol, restart, maxiter)
     xx = CCi(yy)
@@ -211,7 +239,7 @@ for nlambda in nlambdas:
     n = int(n/2)
     sold, soln = sol[:n], sol[n:]
 
-    print('\ndir. err, |err|, err_norm ; l2 <-| L2')
+    print('\ndir. err, err_norm ; l2 <-| L2')
 
     gsold = bem.GridFunction(space, coefficients=sold)
 
@@ -220,15 +248,12 @@ for nlambda in nlambdas:
     ggmie = bem.GridFunction(space, coefficients=miecoeffs)
 
     errd = sold - miecoeffs
-    aerrd = np.abs(errd)
-    gerrd = bem.GridFunction(space, coefficients=errd)
-    gaerrd = bem.GridFunction(space, coefficients=aerrd)
     el = la.norm(errd)
     enl = el / la.norm(miecoeffs)
-    print(el, la.norm(aerrd), enl)
-    eL = gerrd.l2_norm()
-    enL = eL / gmie.l2_norm()
-    print(eL, gaerrd.l2_norm(), enL)
+    print(el, enl)
+    enL = gsold.relative_error(fun=fmieD)
+    eL = enL * gmie.l2_norm()
+    print(eL, enL)
 
     dEl2.append(el)
     dEnl2.append(enl)
@@ -236,21 +261,20 @@ for nlambda in nlambdas:
     dEL2.append(eL)
     dEnL2.append(enL)
 
-    print('\nneu. err, |err|, err_norm ; l2 <-| L2')
+    print('\nneu. err, err_norm ; l2 <-| L2')
+
+    gsoln = bem.GridFunction(space, coefficients=soln)
 
     fmie = bem.GridFunction(space, fun=mieN)
     dnmiecoeffs = fmie.coefficients
 
     errn = soln + dnmiecoeffs
-    aerrn = np.abs(errn)
-    ferrn = bem.GridFunction(space, coefficients=errn)
-    faerrn = bem.GridFunction(space, coefficients=aerrn)
     el = la.norm(errn)
     enl = el / la.norm(dnmiecoeffs)
-    print(el, la.norm(aerrn), enl)
-    eL = ferrn.l2_norm()
-    enL = eL /fmie.l2_norm()
-    print(eL, faerrn.l2_norm(), enL)
+    print(el, enl)
+    enL = gsoln.relative_error(fun=fmieN)
+    eL = eL  * fmie.l2_norm()
+    print(eL, enL)
 
     nEl2.append(el)
     nEnl2.append(enl)
