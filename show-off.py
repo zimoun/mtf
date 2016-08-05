@@ -3,6 +3,7 @@
 
 import numpy as np
 import scipy.linalg as la
+import matplotlib.pyplot as plt
 from time import time
 
 import bempp.api as bem
@@ -12,6 +13,7 @@ from domains import *
 
 lmbda = 0.5
 kRef = 2 * np.pi / lmbda
+print('KRef:', kRef)
 
 #meshname = 'geo/mtf-logo.msh'
 meshname = 'geo/rings.msh'
@@ -69,10 +71,10 @@ checker('error-Calderon with random [no-sense]', A, J, x)
 #################################################
 
 def dir_data(x, normal, dom_ind, result):
-    result[0] =  -np.exp( 1j * kRef * x[1])
+    result[0] =  -np.exp( 1j * kRef * x[0])
 
 def neu_data(x, normal, dom_ind, result):
-    result[0] = -1j * normal[1] * kRef * np.exp( 1j * kRef * x[1])
+    result[0] = -1j * normal[0] * kRef * np.exp( 1j * kRef * x[0])
 
 #################################################
 #################################################
@@ -169,3 +171,26 @@ bem.export(grid_function=gsold,
 bem.export(grid_function=gsold,
            file_name="soldI.msh",
            transformation=np.imag)
+
+print('solution saved.')
+
+# Nx = 200
+# Ny = 200
+# xmin, xmax, ymin, ymax = [-0.5, 4.5, -0.5, 1.5]
+# plot_grid = np.mgrid[xmin:xmax:Nx * 1j, ymin:ymax:Ny * 1j]
+# points = np.vstack((plot_grid[0].ravel(),
+#                     plot_grid[1].ravel(),
+#                     np.zeros(plot_grid[0].size)))
+# u = np.zeros(points.shape[1], dtype=np.complex)
+# u[:] = np.nan
+
+# slp = bem.operators.potential.helmholtz.single_layer(
+#     space, points, kRef)
+# dlp = bem.operators.potential.helmholtz.double_layer(
+#     space, points, kRef)
+# u = slp * gsoln - dlp * gsoln
+
+# uu = u.reshape((Nx, Ny))
+# plt.imshow(np.real(uu.T), extent=[xmin, xmax, ymin, ymax])
+# plt.colorbar()
+# plt.show()
