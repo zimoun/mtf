@@ -121,6 +121,6 @@ tag++;
 EndFor
 
 
-
+Mesh.Algorithm = 6;
 Mesh 2;
 Save Sprintf(Str(name));
