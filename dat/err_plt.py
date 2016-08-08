@@ -44,17 +44,21 @@ lw, ms = 3, 10
 
 ax = myfig.add_subplot(111)
 
-ax.loglog(iH, H**2, 'k--', linewidth=0.5, markersize=ms)
+point = np.exp(np.log(10) * (np.log10(dEnl2[5]) - 2 * np.log10(H[5])))
+ax.loglog(iH, H**2 * point, 'k--', linewidth=0.5, markersize=ms)
+
+point = np.exp(np.log(10) * (np.log10(dEnl2[0]) - np.log10(H[0])))
+ax.loglog(iH, H * point, 'k-.', linewidth=1.5, markersize=ms)
 
 # ax.loglog(iH, dEL2, 'r--', linewidth=lw, markersize=ms, label='L2 Dir.')
 
-if dEnl2[0] < 1e5:
+if dEnl2[0] < 1e6:
     ax.loglog(iH, dEnl2, 'rd', linewidth=lw, markersize=ms, label='normalized l2 Dir.')
     ax.loglog(iH, dEnL2, 'r-', linewidth=lw, markersize=ms, label='normalized L2 Dir.')
 
 # ax.loglog(iH, nEL2, 'b--', linewidth=lw, markersize=ms, label='L2 Neu.')
 
-if nEnl2[0] < 1e5:
+if nEnl2[0] < 1e6:
     ax.loglog(iH, nEnl2, 'bd', linewidth=lw, markersize=ms, label='normalized l2 Neu.')
     ax.loglog(iH, nEnL2, 'b-', linewidth=lw, markersize=ms, label='normalized L2 Neu.')
 
@@ -73,10 +77,10 @@ ax.grid(True, which="both")
 #ax.legend(bbox_to_anchor=(1.1, 1.05))
 ax.legend(loc=3)
 
-axx = ax.twiny()
-axx.set_xticks(Nlambdas)
-axx.set_xticklabels(Nlambdas)
-axx.set_xlabel(r"Mesh Density: $\frac{\lambda}{n_\lambda}$")
+# axx = ax.twiny()
+# axx.set_xticks(Nlambdas)
+# axx.set_xticklabels(Nlambdas)
+# axx.set_xlabel(r"Mesh Density: $\frac{\lambda}{n_\lambda}$")
 
 #myfig.show()
 myfig.savefig('err_eps{0}_k{1}_Ndom{2}.eps'.format(eps, k, Ndom))
@@ -93,10 +97,3 @@ sio.savemat('err_eps{0}_k{1}_Ndom{2}.mat'.format(eps, k, Ndom),
              'dEnL2':dEnL2, 'nEnL2':nEnL2,
              'dEnl2':dEnl2, 'nEnl2':nEnl2,
             })
-
-
-ax.grid(True, which="both")
-# ax.legend(bbox_to_anchor=(1.1, 1.05))
-ax.legend(loc=3)
-
-myfig.savefig('err_conv.eps')
