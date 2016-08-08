@@ -58,14 +58,10 @@ def gen_centers(rads, Lx=1., Ly=1., Lz=1.):
     print('#centers:', len(centers))
     return centers
 
-rads = [ 1, 1, 1, 1 ]
-centers = [ (0, 0, 0), (0, 0, 2.1), (2.1, 0, 0), (0, 2.1, 0)]
+##################################################
+##################################################
 
-# tf = check_centers((0, 2.1, 0), 1, centers, rads)
-
-
-
-N = 50
+N = 5
 kRef = 0.01 * np.pi
 
 Lx, Ly, Lz = 5, 5, 5
