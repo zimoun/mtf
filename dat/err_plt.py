@@ -44,27 +44,27 @@ lw, ms = 3, 10
 
 ax = myfig.add_subplot(111)
 
-ax.loglog(Size, iSize, 'k--', linewidth=0.5, markersize=ms)
+ax.loglog(iH, H**2, 'k--', linewidth=0.5, markersize=ms)
 
-ax.loglog(Size, dEL2, 'r--', linewidth=lw, markersize=ms, label='L2 Dir.')
+# ax.loglog(iH, dEL2, 'r--', linewidth=lw, markersize=ms, label='L2 Dir.')
 
 if dEnl2[0] < 1e5:
-    ax.loglog(Size, dEnl2, 'rd', linewidth=lw, markersize=ms, label='normalized l2 Dir.')
-    ax.loglog(Size, dEnL2, 'r-', linewidth=lw, markersize=ms, label='normalized L2 Dir.')
+    ax.loglog(iH, dEnl2, 'rd', linewidth=lw, markersize=ms, label='normalized l2 Dir.')
+    ax.loglog(iH, dEnL2, 'r-', linewidth=lw, markersize=ms, label='normalized L2 Dir.')
 
-ax.loglog(Size, nEL2, 'b--', linewidth=lw, markersize=ms, label='L2 Neu.')
+# ax.loglog(iH, nEL2, 'b--', linewidth=lw, markersize=ms, label='L2 Neu.')
 
 if nEnl2[0] < 1e5:
-    ax.loglog(Size, nEnl2, 'bd', linewidth=lw, markersize=ms, label='normalized l2 Neu.')
-    ax.loglog(Size, nEnL2, 'b-', linewidth=lw, markersize=ms, label='normalized L2 Neu.')
+    ax.loglog(iH, nEnl2, 'bd', linewidth=lw, markersize=ms, label='normalized l2 Neu.')
+    ax.loglog(iH, nEnL2, 'b-', linewidth=lw, markersize=ms, label='normalized L2 Neu.')
 
-ax.loglog(Size, Ecald, 'm-', linewidth=lw, markersize=ms, label='Calderon l2 Sol.')
-ax.loglog(Size, Etrans, 'mv', linewidth=lw, markersize=ms, label='Transmission l2 Sol.')
+ax.loglog(iH, Ecald, 'm-', linewidth=lw, markersize=ms, label='Calderon l2 Sol.')
+ax.loglog(iH, Etrans, 'mv', linewidth=lw, markersize=ms, label='Transmission l2 Sol.')
 
-ax.loglog(Size, Ecald_mie, 'cs-', linewidth=lw, markersize=ms, label='Calderon l2 Mie')
-ax.loglog(Size, Etrans_mie, 'g*-',linewidth=lw, markersize=ms, label='Transmission l2 Mie')
+ax.loglog(iH, Ecald_mie, 'c-', linewidth=lw, markersize=ms, label='Calderon l2 Mie')
+ax.loglog(iH, Etrans_mie, 'c*',linewidth=lw, markersize=ms, label='Transmission l2 Mie')
 
-ax.set_xlabel('DoF')
+ax.set_xlabel('1/h')
 ax.set_ylabel('Error')
 
 ax.grid(True, which="both")
@@ -80,6 +80,7 @@ axx.set_xlabel(r"Mesh Density: $\frac{\lambda}{n_\lambda}$")
 
 #myfig.show()
 myfig.savefig('err_eps{0}_k{1}_Ndom{2}.eps'.format(eps, k, Ndom))
+myfig.savefig('err_conv.eps')
 
 sio.savemat('err_eps{0}_k{1}_Ndom{2}.mat'.format(eps, k, Ndom),
             {'kRef':k, 'eps':eps, 'Ndom':Ndom,
@@ -93,34 +94,6 @@ sio.savemat('err_eps{0}_k{1}_Ndom{2}.mat'.format(eps, k, Ndom),
              'dEnl2':dEnl2, 'nEnl2':nEnl2,
             })
 
-
-myfig = plt.figure()
-lw, ms = 3, 10
-
-ax = myfig.add_subplot(111)
-
-ax.loglog(iH, H**2, 'k--', linewidth=0.5, markersize=ms)
-
-ax.loglog(iH, dEL2, 'r--', linewidth=lw, markersize=ms, label='L2 Dir.')
-
-if dEnl2[0] < 1e5:
-    ax.loglog(iH, dEnl2, 'rd', linewidth=lw, markersize=ms, label='normalized l2 Dir.')
-    ax.loglog(iH, dEnL2, 'r-', linewidth=lw, markersize=ms, label='normalized L2 Dir.')
-
-ax.loglog(iH, nEL2, 'b--', linewidth=lw, markersize=ms, label='L2 Neu.')
-
-if nEnl2[0] < 1e5:
-    ax.loglog(iH, nEnl2, 'bd', linewidth=lw, markersize=ms, label='normalized l2 Neu.')
-    ax.loglog(iH, nEnL2, 'b-', linewidth=lw, markersize=ms, label='normalized L2 Neu.')
-
-ax.loglog(iH, Ecald, 'm-', linewidth=lw, markersize=ms, label='Calderon l2 Sol.')
-ax.loglog(iH, Etrans, 'mv', linewidth=lw, markersize=ms, label='Transmission l2 Sol.')
-
-ax.loglog(iH, Ecald_mie, 'cs-', linewidth=lw, markersize=ms, label='Calderon l2 Mie')
-ax.loglog(iH, Etrans_mie, 'g*-',linewidth=lw, markersize=ms, label='Transmission l2 Mie')
-
-ax.set_xlabel('1/h')
-ax.set_ylabel('Error')
 
 ax.grid(True, which="both")
 # ax.legend(bbox_to_anchor=(1.1, 1.05))
