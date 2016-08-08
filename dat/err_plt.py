@@ -70,8 +70,8 @@ ax.set_ylabel('Error')
 ax.grid(True, which="both")
 
 #ax.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
-ax.legend(bbox_to_anchor=(1.1, 1.05))
-#ax.legend(loc=3)
+#ax.legend(bbox_to_anchor=(1.1, 1.05))
+ax.legend(loc=3)
 
 axx = ax.twiny()
 axx.set_xticks(Nlambdas)
@@ -123,6 +123,7 @@ ax.set_xlabel('1/h')
 ax.set_ylabel('Error')
 
 ax.grid(True, which="both")
-ax.legend(bbox_to_anchor=(1.1, 1.05))
+# ax.legend(bbox_to_anchor=(1.1, 1.05))
+ax.legend(loc=3)
 
 myfig.savefig('err_conv.eps')
