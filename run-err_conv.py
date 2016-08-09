@@ -17,6 +17,8 @@ from domains import sanitize_config, generate_disjoint_dict, write_params_geo
 from miesphere import mie_D4grid, mie_N4grid
 from krylov import gmres
 
+from my_relative_error import relative_error
+
 #################################################
 
 kRef_rc = 0.1 * np.pi
@@ -243,7 +245,7 @@ for nlambda in nlambdas:
     el = la.norm(errd)
     enl = el / la.norm(miecoeffs)
     print(el, enl)
-    enL = gsold.relative_error(fun=fmieD)
+    enL = relative_error(gsold, fun=fmieD)
     eL = enL * gmie.l2_norm()
     print(eL, enL)
 
@@ -264,7 +266,7 @@ for nlambda in nlambdas:
     el = la.norm(errn)
     enl = el / la.norm(dnmiecoeffs)
     print(el, enl)
-    enL = gsoln.relative_error(fun=fmieN)
+    enL = relative_error(gsoln, fun=fmieN)
     eL = eL  * fmie.l2_norm()
     print(eL, enL)
 
