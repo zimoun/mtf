@@ -8,12 +8,11 @@ import multiprocessing as mp
 
 
 class Process(mp.Process):
-    def __init__(self, i, queue, fcompute, fun, num, den):
+    def __init__(self, i, queue, fcompute, num, den):
         super(self.__class__, self).__init__()
         self.i = i
         self.queue = queue
         self.fcompute = fcompute
-        self.fun = fun
         self.num = num
         self.den = den
 
@@ -22,14 +21,14 @@ class Process(mp.Process):
         while i != 'done':
             i = self.queue.get()
             if isinstance(i, int):
-                nu, de = self.fcompute(i, self.fun)
+                nu, de = self.fcompute(i)
                 self.num[self.i] += nu
                 self.den[self.i] += de
             self.queue.task_done()
 
 def relative_error(gf, fun, element=None):
 
-    def compute(i, fun):
+    def compute(i):
         element = elements[i]
         integration_elements = element.geometry.integration_elements(points)
         global_dofs = element.geometry.local2global(points)
@@ -68,7 +67,7 @@ def relative_error(gf, fun, element=None):
     den = mp.Array('d', np.zeros(nprocs))
 
     for i in range(nprocs):
-        proc = Process(i, jobs, compute, fun, num, den)
+        proc = Process(i, jobs, compute, num, den)
         procs.append(proc)
         proc.start()
 
@@ -125,17 +124,18 @@ if __name__ == '__main__':
     import numpy.linalg as la
     import bempp.api as bem
 
-    h = 0.05
+    h = 0.5
     grid = bem.shapes.sphere(h=h)
     space = bem.space.function_space(grid, "P", 1)
 
-    def ffun(point):
-        x, y, z = point
-        val = x**2
-        return val
+    print('#dof:', space.global_dof_count)
+    print('#elems:', space.grid.leaf_view.elements.shape)
+    print('#nodes:', space.grid.leaf_view.vertices.shape)
+    print('', flush=True)
 
     def fdat(point, normal, dom_ind, result):
-        val = ffun(point)
+        x, y, z = point
+        val = x**2
         result[0] = val
 
     def gfun(point):
@@ -147,20 +147,23 @@ if __name__ == '__main__':
         val = gfun(point)
         result[0] = val
 
-    print('', flush=True)
-
     tt = time.time()
     f = bem.GridFunction(space, fun=fdat)
-    tt = time.time() - tt
-    print(tt)
+    tf = time.time() - tt
+    print('time gf:', tf)
     print('', flush=True)
 
     tt = time.time()
     g = bem.GridFunction(space, fun=gdat)
-    tt = time.time() - tt
-    print(tt)
+    tg = time.time() - tt
+    print('time gf:', tg)
+    print('', flush=True)
 
-    print('')
+    if tf < tg:
+        print('double call slower')
+    else:
+        print('weird?!')
+    print('', flush=True)
 
     tt = time.time()
     fn, gn = f.coefficients, g.coefficients
@@ -168,6 +171,8 @@ if __name__ == '__main__':
     t = time.time() - tt
     print('l2:', en)
     print('time:', t)
+
+    print('', flush=True)
 
     tt = time.time()
     En = f.relative_error(gfun)
