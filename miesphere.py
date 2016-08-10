@@ -114,7 +114,7 @@ def mie_sphere(mesh, Params, name='mie-sphere.pos', field='sca'):
     mesh.write(vals, name)
     return vals
 
-def mie_D4grid(field, kk, R, C, ce, ci, jumpe, jumpi, N, point):
+def mie_D4grid_slow(field, kk, R, C, ce, ci, jumpe, jumpi, N, point):
     """
     Requires:
      kk : numpy.array([kx, ky, kz])
@@ -151,7 +151,7 @@ def mie_D4grid(field, kk, R, C, ce, ci, jumpe, jumpi, N, point):
             val += cn * c
     return val
 
-def mie_N4grid(field, kk, R, C, ce, ci, jumpe, jumpi, N, point):
+def mie_N4grid_slow(field, kk, R, C, ce, ci, jumpe, jumpi, N, point):
     """
     Requires:
      kk : numpy.array([kx, ky, kz])
@@ -187,6 +187,209 @@ def mie_N4grid(field, kk, R, C, ce, ci, jumpe, jumpi, N, point):
             c = eval_legendre(n, costheta)
             val += cn * c
     return val
+
+##########################################################################
+##########################################################################
+##########################################################################
+##########################################################################
+
+def mie_D4grid(field, kk, R, C, ce, ci, jumpe, jumpi, N, point):
+    """
+    Requires:
+     kk : numpy.array([kx, ky, kz])
+     R  : radius of the sphere
+     C  : center of the sphere
+     ce, ci : contrast sqrt(epsExt), sqrt*espInt)
+     jumpe: coeff jump exterior (alpha_Dir, beta_Neu)
+     jumpi: coeff jump interior (alpha_Dir, beta_Neu)
+     N  : Number of modes
+    """
+    pt = point[:]
+    kk = Cartesian(kk)
+    k = kk.norm()
+    kk = kk.normalized()
+    # be careful with this test !!
+    if sp.linalg.norm(sp.linalg.norm(pt - C) - R) > 0.3:
+        return 0. + 0j
+    else:
+        p = Cartesian((pt[0], pt[1], pt[2]))
+        pnorm = p.norm()
+        pn = p.normalized()
+        costheta = pn.dot(kk)
+
+        kpnorm = k * pnorm
+        ke, ki = ce * k, ci * k
+        keR, kiR = ke * R, ki * R
+
+        ae, be = jumpe
+        ai, bi = jumpi
+
+        ke_aeai = ke * ae * ai
+        ki_aebi = ki * ae * bi
+        ke_aibe = ke * ai * be
+
+        ke_beae = ke * be * ae
+        ke_bebe = ke * be * be
+        ki_bebe = ke * ae * bi
+        ke_aibe = ke * ai * be
+
+        sqrt_e = sp.sqrt(sp.pi / (2*keR))
+        sqrt_i = sp.sqrt(sp.pi / (2*kiR))
+        sqrt_n = sp.sqrt(sp.pi / (2*kpnorm))
+        sqrt_m = sp.sqrt(sp.pi / (2*ci*kpnorm))
+
+        val = 0
+        for n in myrange(N):
+
+            Je = sqrt_e * jv(n + 0.5, keR)
+            Ji = sqrt_i * jv(n + 0.5, kiR)
+
+            Jpe = (n / keR) * Je - sqrt_e * jv(n + 1.5, keR)
+            Jpi = (n / kiR) * Ji - sqrt_i * jv(n + 1.5, kiR)
+
+            Ye = sqrt_e * yv(n + 0.5, keR)
+            Ype = (n / keR) * Ye - sqrt_e * yv(n + 1.5, keR)
+
+            locH1 = Je + 1j * Ye
+            locH1p = Jpe + 1j * Ype
+
+            if field == 'sca':
+
+                a = ke_aeai * Ji * Jpe
+                b = ki_aebi * Jpi * Je
+                c = ki_aebi * locH1 * Jpi
+                d = ke_aibe * locH1p * Ji
+
+                v = (2*n+1)*( (1j)**n ) * (a - b) / (c - d)
+
+                Jn = sqrt_n * jv(n + 0.5, kpnorm)
+                Yn = sqrt_n * yv(n + 0.5, kpnorm)
+                locH1 = Jn + 1j * Yn
+
+                cn = v * locH1
+
+            elif field == 'int':
+
+                a = ke_beae * locH1 * Jpe
+                b = ke_bebe * Je * locH1p
+                c = ki_aebi * locH1 * Jpi
+                d = ke_aibe * locH1p * Ji
+
+                v = (2*n+1)*( (1j)**n ) * (a - b) / (c - d)
+
+                Jn = sqrt_m * jv(n + 0.5, ci*kpnorm)
+
+                cn = v * Jn
+
+            else:
+                cn = ((1j)**n)*(2*n+1)*J(n, k*pnorm)
+            c = eval_legendre(n, costheta)
+            val += cn * c
+    return val
+
+def mie_N4grid(field, kk, R, C, ce, ci, jumpe, jumpi, N, point):
+    """
+    Requires:
+     kk : numpy.array([kx, ky, kz])
+     R  : radius of the sphere
+     C  : center of the sphere
+     ce, ci : contrast sqrt(epsExt), sqrt*espInt)
+     jumpe: coeff jump exterior (alpha_Dir, beta_Neu)
+     jumpi: coeff jump interior (alpha_Dir, beta_Neu)
+     N  : Number of modes
+    """
+    pt = point[:]
+    kk = Cartesian(kk)
+    k = kk.norm()
+    kk = kk.normalized()
+    # be careful with this test !!
+    if sp.linalg.norm(sp.linalg.norm(pt - C) - R) > 0.3:
+        return 0. + 0j
+    else:
+        p = Cartesian((pt[0], pt[1], pt[2]))
+        pnorm = p.norm()
+        pn = p.normalized()
+        costheta = pn.dot(kk)
+
+        kpnorm = k * pnorm
+        ke, ki = ce * k, ci * k
+        keR, kiR = ke * R, ki * R
+
+        ae, be = jumpe
+        ai, bi = jumpi
+
+        ke_aeai = ke * ae * ai
+        ki_aebi = ki * ae * bi
+        ke_aibe = ke * ai * be
+
+        ke_beae = ke * be * ae
+        ke_bebe = ke * be * be
+        ki_bebe = ke * ae * bi
+        ke_aibe = ke * ai * be
+
+        sqrt_e = sp.sqrt(sp.pi / (2*keR))
+        sqrt_i = sp.sqrt(sp.pi / (2*kiR))
+        sqrt_n = sp.sqrt(sp.pi / (2*kpnorm))
+        sqrt_m = sp.sqrt(sp.pi / (2*ci*kpnorm))
+
+        val = 0
+        for n in myrange(N):
+            Je = sqrt_e * jv(n + 0.5, keR)
+            Ji = sqrt_i * jv(n + 0.5, kiR)
+
+            Jpe = (n / keR) * Je - sqrt_e * jv(n + 1.5, keR)
+            Jpi = (n / kiR) * Ji - sqrt_i * jv(n + 1.5, kiR)
+
+            Ye = sqrt_e * yv(n + 0.5, keR)
+            Ype = (n / keR) * Ye - sqrt_e * yv(n + 1.5, keR)
+
+            locH1 = Je + 1j * Ye
+            locH1p = Jpe + 1j * Ype
+
+            if field == 'sca':
+
+                a = ke_aeai * Ji * Jpe
+                b = ki_aebi * Jpi * Je
+                c = ki_aebi * locH1 * Jpi
+                d = ke_aibe * locH1p * Ji
+
+                v = (2*n+1)*( (1j)**n ) * (a - b) / (c - d)
+
+                Jn = sqrt_n * jv(n + 0.5, kpnorm)
+                Jpn = (n / kpnorm) * Jn - sqrt_n * jv(n + 1.5, kpnorm)
+
+                Yn = sqrt_n * yv(n + 0.5, kpnorm)
+                Ypn = (n / kpnorm) * Yn - sqrt_n * yv(n + 1.5, kpnorm)
+
+                locH1p = Jpn + 1j * Ypn
+
+                cn = k * v * locH1p
+
+            elif field == 'int':
+
+                a = ke_beae * locH1 * Jpe
+                b = ke_bebe * Je * locH1p
+                c = ki_aebi * locH1 * Jpi
+                d = ke_aibe * locH1p * Ji
+
+                v = (2*n+1)*( (1j)**n ) * (a - b) / (c - d)
+
+                Jn = sqrt_m * jv(n + 0.5, ci*kpnorm)
+                Jpn = (n / (ci*kpnorm)) * Jn - sqrt_m * jv(n + 1.5, ci*kpnorm)
+
+                cn = ci * k * v * Jpn
+
+            else:
+                cn = k * ((1j)**n)*(2*n+1)*Jp(n, k*pnorm)
+            c = eval_legendre(n, costheta)
+            val += cn * c
+    return val
+
+
+##########################################################################
+##########################################################################
+##########################################################################
+##########################################################################
 
 
 if __name__ == "__main__":
