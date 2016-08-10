@@ -147,8 +147,18 @@ if __name__ == '__main__':
         val = gfun(point)
         result[0] = val
 
+    print('', flush=True)
+
+    tt = time.time()
     f = bem.GridFunction(space, fun=fdat)
+    tt = time.time() - tt
+    print(tt)
+    print('', flush=True)
+
+    tt = time.time()
     g = bem.GridFunction(space, fun=gdat)
+    tt = time.time() - tt
+    print(tt)
 
     print('')
 
