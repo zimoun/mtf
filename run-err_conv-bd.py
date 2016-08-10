@@ -19,6 +19,8 @@ from krylov import gmres
 
 from my_relative_error import relative_error
 
+bem.global_parameters.hmat.coarsening = False
+
 #################################################
 
 kRef_rc = 0.1 * np.pi
@@ -29,6 +31,7 @@ geoconf = sanitize_config(Nints=N,
                           names=[ str(i) for i in range(N+1) ],
                           phys=(eps_rc, 1, 1),
                           kRef=kRef_rc,
+                          meshname='sphere',
                           init_offset=True)
 dd = generate_disjoint_dict(geoconf)
 cmds = write_params_geo(geoconf)
@@ -245,9 +248,13 @@ for nlambda in nlambdas:
 
     gsold = bem.GridFunction(space, coefficients=sold)
 
+    tt = time()
     gmie = bem.GridFunction(space, fun=mieD)
     miecoeffs = gmie.coefficients
-    ggmie = bem.GridFunction(space, coefficients=miecoeffs)
+    tt = time() - tt
+    print('time gf:', tt)
+
+    tt = time()
 
     errd = sold - miecoeffs
     el = la.norm(errd)
@@ -256,6 +263,9 @@ for nlambda in nlambdas:
     enL = relative_error(gsold, fun=fmieD)
     eL = enL * gmie.l2_norm()
     print(eL, enL)
+
+    tt = time() - tt
+    print('time err:', tt)
 
     dEl2.append(el)
     dEnl2.append(enl)
@@ -267,8 +277,13 @@ for nlambda in nlambdas:
 
     gsoln = bem.GridFunction(space, coefficients=soln)
 
+    tt = time()
     fmie = bem.GridFunction(space, fun=mieN)
     dnmiecoeffs = fmie.coefficients
+    tt = time() - tt
+    print('time gf:', tt)
+
+    tt = time()
 
     errn = soln + dnmiecoeffs
     el = la.norm(errn)
@@ -277,6 +292,9 @@ for nlambda in nlambdas:
     enL = relative_error(gsoln, fun=fmieN)
     eL = eL  * fmie.l2_norm()
     print(eL, enL)
+
+    tt = time() - tt
+    print('time err:', tt)
 
     nEl2.append(el)
     nEnl2.append(enl)
