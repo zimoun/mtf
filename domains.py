@@ -5,8 +5,29 @@ debug = False
 if debug:
     print('Debug: {}'.format(debug))
 
-GMSH = 'gmsh'
 from subprocess import call
+try:
+    mygmsh = 'gmsh'
+    call([mygmsh, '-'])
+    ok = True
+except:
+    import os
+    home = os.environ['HOME']
+    path = os.environ['PATH']
+    paths = path.split(':')
+    for p in paths:
+        path = p.replace('~', home)
+        mygmsh = path + '/' + 'gmsh'
+        try:
+            print(mygmsh)
+            call([mygmsh, '-'])
+            ok = True
+            break
+        except:
+            ok = False
+if not ok:
+    raise ImportError('Gmsh is missing.')
+GMSH = mygmsh
 
 from copy import deepcopy
 import warnings as warning
