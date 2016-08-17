@@ -219,6 +219,9 @@ class MultiTrace:
                 opXd = funI(space_trial_d, space_range_d, space_test_d)
                 opXn = funI(space_trial_n, space_range_n, space_test_n)
 
+                print('====coeffs jumps: alpha_j/i={0:e}  beta_j/i={1:e}'.format(alph/alpha,
+                                                                             -bet/beta))
+
                 opXX[0, 0] = (alph/alpha) * opXd
                 opXX[1, 1] = - (bet/beta) * opXn
 
