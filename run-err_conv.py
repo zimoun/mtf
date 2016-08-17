@@ -25,12 +25,14 @@ bem.global_parameters.hmat.coarsening = False
 
 kRef_rc = 0.1 * np.pi
 eps_rc = 2
+alpha_rc, beta_rc = 3, 4
 
 N = 1
 geoconf = sanitize_config(Nints=N,
                           names=[ str(i) for i in range(N+1) ],
-                          phys=(eps_rc, 1, 1),
+                          phys=(eps_rc, alpha_rc, beta_rc),
                           kRef=kRef_rc,
+                          meshname='sphere',
                           init_offset=True)
 dd = generate_disjoint_dict(geoconf)
 cmds = write_params_geo(geoconf)
@@ -40,7 +42,7 @@ nlambdas = [5, 10, 20, 40, 80, 160]
 #################################################
 
 kRef = geoconf['kRef']
-eps, _, _ = geoconf['phys'][1]
+eps, alpha, beta = geoconf['phys'][1]
 Ndom = len(geoconf['names'])
 
 #################################################
@@ -48,10 +50,10 @@ Ndom = len(geoconf['names'])
 iincident = 1
 
 def dir_data(x, normal, dom_ind, result):
-    result[0] =  -np.exp( 1j * kRef * x[iincident])
+    result[0] =  -np.exp(1j * kRef * x[iincident])
 
 def neu_data(x, normal, dom_ind, result):
-    result[0] = -1j * normal[iincident] * kRef * np.exp( 1j * kRef * x[iincident])
+    result[0] = -1j * normal[iincident] * kRef * np.exp(1j * kRef * x[iincident])
 
 #################################################
 
@@ -64,7 +66,7 @@ for q in range(3):
 kk = tuple(kk)
 R = 1
 ce, ci = 1, np.sqrt(eps)
-jumpe, jumpi  = (1, 1), (1, 1)
+jumpe, jumpi  = (1, 1), (alpha, beta)
 Nmodes = 50
 field = 'sca'
 # field = 'int'
