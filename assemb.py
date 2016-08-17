@@ -721,6 +721,6 @@ def checker(string, A, B, x, b=None):
     else:
         e = la.norm(y - z - b)
     print(e)
-    print('#time: {0} {1} {2}'.format(t1, t2, t1 - t2))
+    print('#time: {0} [{1} {2} {3}]'.format(t1 + t2, t1, t2, t1 - t2))
     return e
 ###########################
