@@ -142,6 +142,7 @@ class MultiTrace:
         funQ = self._funQ
         funI = self._funI
 
+        nrow, ncol = 0, 0
         print('\n=Collecting all the blocks')
         for dom in domains:
             ii = domains.getIndexDom(dom['name'])
@@ -179,6 +180,9 @@ class MultiTrace:
             space_n = (space_test_n, space_trial_n)
             spaces = (space_d, space_n)
             self.spaces[ii] = spaces
+
+            ncol += space_test_d.global_dof_count + space_test_n.global_dof_count
+            nrow += space_trial_d.global_dof_count + space_trial_n.global_dof_count
 
             # the kernel type is managed in __init__
             opK = funK(space_trial_d, space_range_d, space_test_d, k)
@@ -231,6 +235,9 @@ class MultiTrace:
         self.opA = opA
         self.opX = opX
         self.opI = opI
+
+        self.shape = (nrow, ncol)
+        print('#shape:', self.shape)
 
         self._collected = True
         self.tcollect = time() - tinit
