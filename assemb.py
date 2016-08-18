@@ -237,7 +237,6 @@ class MultiTrace:
         self.opI = opI
 
         self.shape = (nrow, ncol)
-        print('#shape:', self.shape)
 
         self._collected = True
         self.tcollect = time() - tinit
